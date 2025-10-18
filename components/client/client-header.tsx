@@ -19,9 +19,9 @@ export function ClientHeader() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">P</span>
+              <span className="text-primary-foreground font-bold text-lg">E</span>
             </div>
-            <span className="font-bold text-lg text-foreground hidden sm:inline">PimPom Store</span>
+            <span className="font-bold text-lg text-foreground hidden sm:inline">E-com</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -43,14 +43,14 @@ export function ClientHeader() {
           {/* Right Actions */}
           <div className="flex items-center gap-4">
             <Link href="/cart">
-              <Button variant="ghost" size="icon" className="relative">
+              {/* <Button variant="ghost" size="icon" className="relative">
                 <ShoppingCart className="w-5 h-5" />
                 {totalItems > 0 && (
                   <span className="absolute top-1 right-1 w-4 h-4 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center font-semibold">
                     {totalItems}
                   </span>
                 )}
-              </Button>
+              </Button> */}
             </Link>
 
             {user && user.role === "admin" ? (
@@ -66,12 +66,12 @@ export function ClientHeader() {
                 Logout
               </Button>
             ) : (
-              <Link href="/account/login">
+              // <Link href="/account/login/">
                 <Button variant="outline" size="sm" className="bg-transparent hidden sm:inline-flex">
                   <User className="w-4 h-4 mr-2" />
                   Login
                 </Button>
-              </Link>
+              // </Link>
             )}
 
             {/* Mobile Menu Button */}

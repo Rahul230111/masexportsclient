@@ -49,7 +49,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
       </div>
 
       {/* Rating */}
-      <div className="flex items-center gap-4">
+      {/* <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1">
             {[...Array(5)].map((_, i) => (
@@ -61,7 +61,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
           <span className="font-semibold text-foreground">{product.rating}</span>
         </div>
         <span className="text-muted-foreground">({product.reviews} reviews)</span>
-      </div>
+      </div> */}
 
       {/* Price */}
       <div className="space-y-2">
@@ -126,7 +126,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
       </div>
 
       {/* Wishlist and Share */}
-      <div className="flex gap-3 pt-4 border-t border-border">
+      {/* <div className="flex gap-3 pt-4 border-t border-border">
         <Button
           onClick={() => setIsWishlisted(!isWishlisted)}
           variant="outline"
@@ -139,14 +139,14 @@ export function ProductDetails({ product }: ProductDetailsProps) {
           <Share2 className="w-5 h-5" />
           Share
         </Button>
-      </div>
+      </div> */}
 
       {/* Delivery Info */}
-      <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+      {/* <div className="bg-muted/50 rounded-lg p-4 space-y-2">
         <p className="text-sm font-medium text-foreground">Delivery Information</p>
         <p className="text-sm text-muted-foreground">Estimated delivery: 3-5 business days</p>
         <p className="text-sm text-muted-foreground">Free shipping on orders over ₹2500</p>
-      </div>
+      </div> */}
     </div>
   )
 }

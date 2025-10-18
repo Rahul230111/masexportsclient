@@ -10,16 +10,16 @@ import { Card } from "@/components/ui/card"
 // Mock product data - replace with API call
 const mockProduct = {
   id: 1,
-  name: "Premium Wireless Headphones",
-  price: 24999,
-  originalPrice: 33999,
+  name: "Sambarani stick",
+  price: 99.99,
+  originalPrice: 199,
   rating: 4.8,
   reviews: 128,
   inStock: true,
-  category: "Electronics",
+  category: "Devine",
   description:
-    "Experience premium sound quality with our wireless headphones. Featuring active noise cancellation, 30-hour battery life, and premium comfort for all-day wear.",
-  images: ["/wireless-headphones.png", "/wireless-headphones.png", "/wireless-headphones.png"],
+    "Experience the divine aroma with our premium Sambarani Sticks, specially crafted for spiritual rituals and meditation. Made from high-quality natural ingredients, these sticks release a soothing fragrance that purifies your surroundings, calms the mind, and enhances focus during prayers. Perfect for home poojas, temples, or any sacred space, our Sambarani Sticks bring tranquility and positivity to your daily spiritual practice.",
+  images: ["/sambrani.webp", "/sambrani.webp", "/sambrani.webp"],
   specifications: [
     { label: "Driver Size", value: "40mm" },
     { label: "Frequency Response", value: "20Hz - 20kHz" },
@@ -76,7 +76,7 @@ export default function ProductPage() {
                   </div>
 
                   {/* Features Tab */}
-                  <div className="border-t border-border pt-6">
+                  {/* <div className="border-t border-border pt-6">
                     <h3 className="text-xl font-semibold text-foreground mb-4">Features</h3>
                     <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {mockProduct.features.map((feature, index) => (
@@ -86,10 +86,10 @@ export default function ProductPage() {
                         </li>
                       ))}
                     </ul>
-                  </div>
+                  </div> */}
 
                   {/* Specifications Tab */}
-                  <div className="border-t border-border pt-6">
+                  {/* <div className="border-t border-border pt-6">
                     <h3 className="text-xl font-semibold text-foreground mb-4">Specifications</h3>
                     <div className="space-y-3">
                       {mockProduct.specifications.map((spec, index) => (
@@ -99,13 +99,13 @@ export default function ProductPage() {
                         </div>
                       ))}
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </Card>
             </div>
 
             {/* Sidebar */}
-            <div className="space-y-4">
+            {/* <div className="space-y-4">
               <Card className="p-4 bg-primary/5 border-primary/20">
                 <p className="text-sm text-muted-foreground mb-2">Free Shipping</p>
                 <p className="font-semibold text-foreground">On orders over ₹2500</p>
@@ -118,18 +118,18 @@ export default function ProductPage() {
                 <p className="text-sm text-muted-foreground mb-2">Secure Payment</p>
                 <p className="font-semibold text-foreground">100% encrypted</p>
               </Card>
-            </div>
+            </div> */}
           </div>
 
           {/* Reviews Section */}
-          <ReviewsSection
+          {/* <ReviewsSection
             productId={mockProduct.id}
             productRating={mockProduct.rating}
             productReviews={mockProduct.reviews}
-          />
+          /> */}
 
           {/* Related Products */}
-          <RelatedProducts currentProductId={mockProduct.id} />
+          {/* <RelatedProducts currentProductId={mockProduct.id} /> */}
         </div>
       </div>
     </ClientLayout>

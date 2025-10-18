@@ -8,8 +8,8 @@ export function ClientFooter() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Brand */}
           <div>
-            <h3 className="font-bold text-lg text-foreground mb-4">PimPom Store</h3>
-            <p className="text-sm text-muted-foreground">Premium products for modern living.</p>
+            <h3 className="font-bold text-lg text-foreground mb-4">E-com</h3>
+            <p className="text-sm text-muted-foreground">Premium products for Pooja Essentials.</p>
           </div>
 
           {/* Quick Links */}
@@ -62,7 +62,7 @@ export function ClientFooter() {
             <ul className="space-y-3 text-sm">
               <li className="flex items-center gap-2 text-muted-foreground">
                 <Mail className="w-4 h-4" />
-                support@pimpom.com
+                support@.com
               </li>
               <li className="flex items-center gap-2 text-muted-foreground">
                 <Phone className="w-4 h-4" />
@@ -78,7 +78,7 @@ export function ClientFooter() {
 
         {/* Bottom */}
         <div className="border-t border-border pt-8 flex flex-col md:flex-row items-center justify-between text-sm text-muted-foreground">
-          <p>&copy; 2025 PimPom Store. All rights reserved.</p>
+          <p>&copy; 2025. All rights reserved.</p>
           <div className="flex gap-6 mt-4 md:mt-0">
             <Link href="/privacy" className="hover:text-foreground transition-colors">
               Privacy Policy

@@ -13,7 +13,7 @@ export default function AboutPage() {
         {/* Hero Section */}
         <div className="bg-gradient-to-r from-primary/10 to-primary/5 py-12 md:py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">About PimPom Store</h1>
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">About Us</h1>
             <p className="text-lg text-muted-foreground max-w-2xl">
               Discover our story, mission, and commitment to delivering premium products and exceptional customer
               service.
@@ -28,21 +28,18 @@ export default function AboutPage() {
             <div>
               <h2 className="text-3xl font-bold text-foreground mb-4">Our Story</h2>
               <p className="text-muted-foreground mb-4 leading-relaxed">
-                Founded in 2020, PimPom Store began with a simple vision: to bring premium, high-quality products to
-                customers worldwide. What started as a small operation has grown into a trusted brand serving thousands
-                of satisfied customers.
+                Welcome to E-com, your trusted destination for all devotional and spiritual needs.
+We believe that worship is not just a ritual — it’s a heartfelt connection between you and the divine. Our mission is to bring you the finest collection of pooja essentials, idols, and spiritual accessories that add purity and positivity to your prayers and home.
               </p>
               <p className="text-muted-foreground mb-4 leading-relaxed">
-                We believe that everyone deserves access to premium products without compromising on quality or
-                affordability. Our carefully curated collection reflects our commitment to excellence in every aspect.
+                we offer a wide range of products including incense sticks, diyas, brass lamps, idols of deities, pooja samagri, rudraksha malas, yantras, temple décor items, and more. Every product is carefully selected to maintain traditional values while ensuring the highest quality.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                Today, we continue to innovate and expand our offerings, always keeping our customers at the heart of
-                everything we do.
+               Whether you’re preparing for a daily pooja, festival, or special occasion, our store is here to provide everything you need for a complete and divine experience. We take pride in being a part of your spiritual journey — spreading light, peace, and devotion with every product we deliver.
               </p>
             </div>
             <div className="bg-muted rounded-lg h-96 flex items-center justify-center">
-              <img src="/about-us-team.jpg" alt="Our Team" className="w-full h-full object-cover rounded-lg" />
+              <img src="/about.png" alt="Our Team" className="w-full h-full object-cover rounded-lg" />
             </div>
           </div>
 
@@ -76,7 +73,7 @@ export default function AboutPage() {
 
           {/* Why Choose Us */}
           <div className="mb-16">
-            <h2 className="text-3xl font-bold text-foreground mb-8 text-center">Why Choose PimPom Store?</h2>
+            <h2 className="text-3xl font-bold text-foreground mb-8 text-center">Why Choose Us?</h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <Card className="p-6 text-center">
                 <Award className="w-12 h-12 text-primary mx-auto mb-4" />
@@ -107,7 +104,7 @@ export default function AboutPage() {
           <div className="bg-primary/10 rounded-lg p-8 md:p-12 text-center">
             <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">Ready to Shop?</h2>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Explore our collection of premium products and experience the PimPom Store difference.
+              Explore our collection of premium products and experience the Ecom Store difference.
             </p>
             <Link href="/products">
               <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">

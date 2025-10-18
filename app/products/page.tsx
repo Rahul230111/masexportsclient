@@ -11,65 +11,138 @@ import { useState } from "react"
 const allProducts = [
   {
     id: 1,
-    name: "Premium Wireless Headphones",
-    price: 299.99,
+    name: "Sambarani Stick",
+    price: 99.99,
     rating: 4.8,
     reviews: 128,
-    image: "/wireless-headphones.png",
-    category: "Electronics",
+    image: "/sambrani.webp",
+    category: "Devine",
   },
   {
     id: 2,
-    name: "Luxury Watch",
-    price: 599.99,
+    name: "Sambarani Cup",
+    price: 99.99,
     rating: 4.9,
     reviews: 89,
-    image: "/luxury-watch.jpg",
-    category: "Accessories",
+    image: "/sambranicup.webp",
+    category: "Devine",
   },
   {
     id: 3,
-    name: "Designer Sunglasses",
-    price: 199.99,
+    name: "Powder",
+    price: 99.99,
     rating: 4.7,
     reviews: 156,
-    image: "/designer-sunglasses.png",
-    category: "Accessories",
+    image: "/powder.webp",
+    category: "Devine",
   },
   {
     id: 4,
-    name: "Premium Wireless Headphones",
-    price: 299.99,
+    name: "Donkey Dung",
+    price: 99.99,
     rating: 4.8,
     reviews: 128,
-    image: "/wireless-headphones.png",
-    category: "Electronics",
+    image: "/dung.webp",
+    category: "Devine",
   },
   {
     id: 5,
-    name: "Luxury Watch",
-    price: 599.99,
+    name: "KalMuthra",
+    price: 99.99,
     rating: 4.9,
     reviews: 89,
-    image: "/luxury-watch.jpg",
-    category: "Accessories",
+    image: "/kalmuthra.webp",
+    category: "Devine",
   },
   {
     id: 6,
-    name: "Designer Sunglasses",
-    price: 199.99,
+    name: "Donkey Hair",
+    price: 99.99,
     rating: 4.7,
     reviews: 156,
-    image: "/designer-sunglasses.png",
+    image: "/hair.webp",
+    category: "Devine",
+  },
+  {
+    id: 7,
+    name: "Anklet",
+    price: 99.99,
+    rating: 4.7,
+    reviews: 156,
+    image: "/anklet.webp",
     category: "Accessories",
   },
+  {
+    id: 8,
+    name: "ring",
+    price: 99.99,
+    rating: 4.7,
+    reviews: 156,
+    image: "/ring.webp",
+    category: "Accessories",
+  },
+  {
+    id: 9,
+    name: "Keychains",
+    price: 99.99,
+    rating: 4.7,
+    reviews: 156,
+    image: "/key.webp",
+    category: "Accessories",
+  },
+  {
+    id: 10,
+    name: "Doller",
+    price: 99.99,
+    rating: 4.7,
+    reviews: 156,
+    image: "/doller.webp",
+    category: "Accessories",
+  },
+  {
+    id: 11,
+    name: "paper weight",
+    price: 99.99,
+    rating: 4.7,
+    reviews: 156,
+    image: "/weight.webp",
+    category: "Accessories",
+  },
+  {
+    id: 12,
+    name: "Tumbler",
+    price: 99.99,
+    rating: 4.7,
+    reviews: 156,
+    image: "/tumbler.webp",
+    category: "Accessories",
+  },
+  {
+    id: 13,
+    name: "Soap,",
+    price: 99.99,
+    rating: 4.7,
+    reviews: 156,
+    image: "/soap.webp",
+    category: "Cosmatics",
+  },
+  {
+    id: 14,
+    name: "Brightning Scerum",
+    price: 99.99,
+    rating: 4.7,
+    reviews: 156,
+    image: "/serum.webp",
+    category: "Cosmatics",
+  },
+  
 ]
 
 export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [sortBy, setSortBy] = useState("featured")
 
-  const categories = ["All", "Electronics", "Accessories", "Clothing", "Home"]
+  const categories = ["All", "Devine", "Accessories","Cosmatics" ]
 
   const filteredProducts =
     selectedCategory === "All" ? allProducts : allProducts.filter((p) => p.category === selectedCategory)
@@ -112,7 +185,7 @@ export default function ProductsPage() {
                 </div>
 
                 {/* Price Filter */}
-                <div className="border-t border-border pt-6">
+                {/* <div className="border-t border-border pt-6">
                   <h3 className="font-semibold text-foreground mb-3">Price Range</h3>
                   <div className="space-y-2">
                     {["Under $100", "$100 - $300", "$300 - $500", "Over $500"].map((range) => (
@@ -128,10 +201,10 @@ export default function ProductsPage() {
                       </label>
                     ))}
                   </div>
-                </div>
+                </div> */}
 
                 {/* Rating Filter */}
-                <div className="border-t border-border pt-6">
+                {/* <div className="border-t border-border pt-6">
                   <h3 className="font-semibold text-foreground mb-3">Rating</h3>
                   <div className="space-y-2">
                     {[5, 4, 3, 2, 1].map((stars) => (
@@ -143,12 +216,12 @@ export default function ProductsPage() {
                       </label>
                     ))}
                   </div>
-                </div>
+                </div> */}
 
                 {/* Clear Filters */}
-                <Button variant="outline" className="w-full bg-transparent">
+                {/* <Button variant="outline" className="w-full bg-transparent">
                   Clear Filters
-                </Button>
+                </Button> */}
               </Card>
             </div>
 
@@ -195,18 +268,18 @@ export default function ProductsPage() {
                         </div>
 
                         {/* Rating */}
-                        <div className="flex items-center gap-2">
+                        {/* <div className="flex items-center gap-2">
                           <div className="flex items-center gap-1">
                             <span className="text-sm font-semibold text-foreground">{product.rating}</span>
                             <span className="text-yellow-400">★</span>
                           </div>
                           <span className="text-xs text-muted-foreground">({product.reviews})</span>
-                        </div>
+                        </div> */}
 
                         {/* Price and Button */}
                         <div className="flex items-center justify-between pt-2 border-t border-border mt-auto">
                           <span className="text-lg font-bold text-foreground">
-                            ₹{(product.price * 83).toLocaleString("en-IN")}
+                            ₹{(product.price ).toLocaleString("en-IN")}
                           </span>
                           <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2">
                             <ShoppingCart className="w-4 h-4" />

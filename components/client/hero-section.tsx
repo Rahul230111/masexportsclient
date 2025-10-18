@@ -10,21 +10,21 @@ const heroSlides = [
     id: 1,
     title: "Discover Premium Products",
     description: "Explore our curated collection of luxury items and everyday essentials. Quality meets affordability.",
-    image: "/premium-luxury-products-showcase.jpg",
+    image: "/hero.jpg",
     cta: "Shop Now",
   },
   {
     id: 2,
     title: "Exclusive Deals & Offers",
     description: "Get up to 50% off on selected premium products. Limited time offers available now.",
-    image: "/premium-luxury-products-showcase.jpg",
+    image: "/hero1.jpg",
     cta: "View Deals",
   },
   {
     id: 3,
     title: "New Arrivals",
     description: "Check out our latest collection of trending products. Be the first to own them.",
-    image: "/premium-luxury-products-showcase.jpg",
+    image: "/hero2.jpg",
     cta: "Explore New",
   },
 ]
@@ -69,11 +69,11 @@ export function HeroSection() {
           <div className="space-y-6">
             <div className="space-y-4">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-balance leading-tight">{slide.title}</h1>
-              <p className="text-lg md:text-xl text-slate-300 text-balance">{slide.description}</p>
+              {/* <p className="text-lg md:text-xl text-slate-300 text-balance">{slide.description}</p> */}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/products">
+              <Link href="/">
                 <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg font-semibold w-full sm:w-auto">
                   {slide.cta}
                 </Button>
@@ -87,7 +87,7 @@ export function HeroSection() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-4 pt-8">
+            {/* <div className="grid grid-cols-3 gap-4 pt-8">
               <div>
                 <p className="text-2xl font-bold">10K+</p>
                 <p className="text-sm text-slate-400">Products</p>
@@ -100,7 +100,7 @@ export function HeroSection() {
                 <p className="text-2xl font-bold">4.9★</p>
                 <p className="text-sm text-slate-400">Rating</p>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Right Image */}

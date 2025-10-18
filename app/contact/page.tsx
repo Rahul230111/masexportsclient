@@ -53,7 +53,7 @@ export default function ContactPage() {
             <Card className="p-6 text-center">
               <Mail className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="font-semibold text-foreground mb-2">Email</h3>
-              <p className="text-muted-foreground text-sm mb-2">support@pimpom.com</p>
+              <p className="text-muted-foreground text-sm mb-2">support@.com</p>
               <p className="text-xs text-muted-foreground">We'll respond within 24 hours</p>
             </Card>
 
