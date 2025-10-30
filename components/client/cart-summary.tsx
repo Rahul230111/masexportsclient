@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
 import Link from "next/link"
+import { useCart } from "@/context/cart-context"
 
 interface CartItem {
   id: number
@@ -18,12 +19,13 @@ interface CartSummaryProps {
   items: CartItem[]
 }
 
-export function CartSummary({ items }: CartSummaryProps) {
+export function CartSummary() {
   const [couponCode, setCouponCode] = useState("")
   const [discount, setDiscount] = useState(0)
+  const { items } = useCart() 
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const shipping = subtotal > 2500 ? 0 : 100
+  const shipping =  0 // Always free
   const tax = (subtotal - discount) * 0.1
   const total = subtotal - discount + shipping + tax
 
@@ -40,7 +42,7 @@ export function CartSummary({ items }: CartSummaryProps) {
   return (
     <div className="space-y-4 sticky top-24">
       {/* Coupon Code */}
-      <Card className="p-4">
+      {/* <Card className="p-4">
         <label className="block text-sm font-medium text-foreground mb-2">Coupon Code</label>
         <div className="flex gap-2">
           <Input
@@ -55,7 +57,7 @@ export function CartSummary({ items }: CartSummaryProps) {
           </Button>
         </div>
         <p className="text-xs text-muted-foreground mt-2">Try: SAVE10 or SAVE20</p>
-      </Card>
+      </Card> */}
 
       {/* Order Summary */}
       <Card className="p-6 space-y-4">
@@ -78,13 +80,7 @@ export function CartSummary({ items }: CartSummaryProps) {
 
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Shipping</span>
-            <span className="text-foreground font-medium">
-              {shipping === 0 ? (
-                <span className="text-green-600 dark:text-green-400">Free</span>
-              ) : (
-                `₹${shipping.toLocaleString("en-IN")}`
-              )}
-            </span>
+            <span className="text-green-600 dark:text-green-400 font-medium">Free</span>
           </div>
 
           <div className="flex justify-between text-sm">
@@ -94,15 +90,17 @@ export function CartSummary({ items }: CartSummaryProps) {
         </div>
 
         <div className="flex justify-between text-lg">
-          <span className="font-semibold text-foreground">Total</span>
-          <span className="font-bold text-primary text-xl">₹{total.toLocaleString("en-IN")}</span>
-        </div>
+  <span className="font-semibold text-foreground">Total</span>
+  <span className="font-bold text-primary text-xl">
+    ₹{total.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+  </span>
+</div>
 
-        <Link href="/checkout">
+        <Link href="/checkout"> 
           <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-6 text-lg font-semibold">
             Proceed to Checkout
           </Button>
-        </Link>
+         </Link> 
 
         <Link href="/products">
           <Button variant="outline" className="w-full bg-transparent">
@@ -114,7 +112,7 @@ export function CartSummary({ items }: CartSummaryProps) {
       {/* Info Cards */}
       <Card className="p-4 bg-primary/5 border-primary/20">
         <p className="text-sm text-muted-foreground">
-          <span className="font-semibold text-foreground">Free Shipping</span> on orders over ₹2500
+          <span className="font-semibold text-foreground">Free Shipping</span> on orders over ₹
         </p>
       </Card>
 

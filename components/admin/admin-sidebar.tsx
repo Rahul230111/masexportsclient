@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/context/auth-context"
 import { Button } from "@/components/ui/button"
-import { LayoutDashboard, Package, ShoppingCart, LogOut, ChevronLeft } from "lucide-react"
+import { LayoutDashboard, Package, ShoppingCart, LogOut, ChevronLeft,FrameIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface AdminSidebarProps {
@@ -20,6 +20,7 @@ export function AdminSidebar({ open, onToggle }: AdminSidebarProps) {
     { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/products", label: "Products", icon: Package },
     { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
+    {href:"/admin/hero",label:"hero",icon: FrameIcon }
   ]
 
   return (
@@ -31,7 +32,7 @@ export function AdminSidebar({ open, onToggle }: AdminSidebarProps) {
     >
       {/* Header */}
       <div className="p-4 border-b border-sidebar-border flex items-center justify-between">
-        {open && <h1 className="font-bold text-lg text-sidebar-foreground">PimPom</h1>}
+        {open && <h1 className="font-bold text-lg text-sidebar-foreground">Admin</h1>}
         <button onClick={onToggle} className="p-1 hover:bg-sidebar-accent rounded-lg transition-colors">
           <ChevronLeft className={cn("w-5 h-5 text-sidebar-foreground transition-transform", !open && "rotate-180")} />
         </button>

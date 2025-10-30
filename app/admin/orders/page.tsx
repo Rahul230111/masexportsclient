@@ -57,7 +57,7 @@ export default function OrdersPage() {
         <div className="space-y-6">
           <AdminHeader title="Orders" description="Manage customer orders" />
 
-          <Card className="overflow-hidden">
+          {/* <Card className="overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-muted border-b border-border">
@@ -101,7 +101,7 @@ export default function OrdersPage() {
                 </tbody>
               </table>
             </div>
-          </Card>
+          </Card> */}
         </div>
       </AdminLayout>
     </ProtectedRoute>

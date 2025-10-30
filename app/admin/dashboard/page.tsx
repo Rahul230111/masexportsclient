@@ -7,8 +7,20 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { BarChart3, Package, ShoppingCart, Users } from "lucide-react"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+
 
 export default function AdminDashboard() {
+
+   const router = useRouter()
+
+    useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}")
+    if (!user || user.role !== "admin") {
+      router.push("/login")
+    }
+  }, [])
   return (
     <ProtectedRoute requiredRole="admin">
       <AdminLayout>
@@ -16,7 +28,7 @@ export default function AdminDashboard() {
           <AdminHeader title="Dashboard" description="Welcome to your admin panel" />
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -56,10 +68,10 @@ export default function AdminDashboard() {
                 <Users className="w-10 h-10 text-primary/20" />
               </div>
             </Card>
-          </div>
+          </div> */}
 
           {/* Quick Actions */}
-          <Card className="p-6">
+          {/* <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Link href="/admin/products/new">
@@ -78,10 +90,10 @@ export default function AdminDashboard() {
                 </Button>
               </Link>
             </div>
-          </Card>
+          </Card> */}
 
           {/* Recent Activity */}
-          <Card className="p-6">
+          {/* <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-4">Recent Activity</h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between py-2 border-b border-border">
@@ -104,7 +116,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </div>
-          </Card>
+          </Card> */}
         </div>
       </AdminLayout>
     </ProtectedRoute>

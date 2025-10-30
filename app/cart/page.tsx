@@ -54,7 +54,7 @@ export default function CartPage() {
 
               {/* Cart Summary */}
               <div>
-                <CartSummary items={items} />
+                <CartSummary />
               </div>
             </div>
           </div>

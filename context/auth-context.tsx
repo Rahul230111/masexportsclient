@@ -1,99 +1,145 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { createContext, useContext, useState, useEffect } from "react"
+import { createContext, useContext, ReactNode, useState, useEffect } from "react";
+import toast from "react-hot-toast";
 
+// ✅ Common user type
 interface User {
-  id: string
-  email: string
-  role: "admin" | "customer"
+  _id: string;
+  name: string;
+  email: string;
+  role: "admin" | "customer";
 }
 
+// ✅ Context type
 interface AuthContextType {
-  user: User | null
-  isLoading: boolean
-  login: (email: string, password: string) => Promise<void>
-  logout: () => void
-  isAuthenticated: boolean
+  user: User | null;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+// ✅ Custom hook
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
+  return context;
+};
 
+// ✅ Provider component
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 🔹 Load user & token from localStorage on mount
   useEffect(() => {
-    // Check if user is already logged in (from localStorage)
-    const storedUser = localStorage.getItem("user")
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser))
-      } catch (error) {
-        console.error("Failed to parse stored user:", error)
-        localStorage.removeItem("user")
-      }
-    }
-    setIsLoading(false)
-  }, [])
-
-  const login = async (email: string, password: string) => {
-    setIsLoading(true)
     try {
-      const response = await fetch("/api/auth/login", {
+      const token = localStorage.getItem("token");
+      const storedUser = localStorage.getItem("user");
+
+      if (token && storedUser) {
+        const parsedUser = JSON.parse(storedUser) as User;
+        setUser(parsedUser);
+      }
+    } catch (err) {
+      console.error("Error loading stored user:", err);
+      localStorage.removeItem("user");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // ✅ Login (tries admin first, then user)
+  const login = async (email: string, password: string) => {
+    setIsLoading(true);
+
+    try {
+      // --- 1️⃣ Try Admin Login ---
+      const adminRes = await fetch("http://localhost:5000/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
-      })
+      });
 
-      const contentType = response.headers.get("content-type")
-      if (!contentType?.includes("application/json")) {
-        throw new Error("Server returned invalid response. Please check your backend connection.")
+      if (adminRes.ok) {
+        const adminData = await adminRes.json();
+
+        const adminUser: User = {
+          _id: adminData._id,
+          name: adminData.name,
+          email: adminData.email,
+          role: "admin",
+        };
+
+        localStorage.setItem("token", adminData.token);
+        localStorage.setItem("user", JSON.stringify(adminUser));
+        setUser(adminUser);
+
+        toast.success("Welcome, Admin!");
+        setIsLoading(false);
+        return;
       }
 
-      const data = await response.json()
+      // --- 2️⃣ Try User Login ---
+      const userRes = await fetch("http://localhost:5000/api/users/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-      if (!response.ok) {
-        throw new Error(data.error || "Login failed")
+      const userData = await userRes.json();
+
+      if (!userRes.ok) {
+        throw new Error(userData.message || "Invalid credentials");
       }
 
-      const userData: User = {
-        id: data.id,
-        email: data.email,
-        role: data.role,
-      }
+      const normalUser: User = {
+        _id: userData.user._id,
+        name: userData.user.name,
+        email: userData.user.email,
+        role: userData.user.role || "customer",
+      };
 
-      setUser(userData)
-      localStorage.setItem("user", JSON.stringify(userData))
+      localStorage.setItem("token", userData.token);
+      localStorage.setItem("user", JSON.stringify(normalUser));
+      setUser(normalUser);
+
+      toast.success("Login successful!");
+    } catch (err: any) {
+      console.error("Login error:", err);
+      toast.error(err.message || "Login failed");
+      throw err;
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
+  // ✅ Logout
   const logout = () => {
-    setUser(null)
-    localStorage.removeItem("user")
-  }
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    toast.success("Logged out successfully!");
+  };
+
+  const isAuthenticated = !!user;
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        setUser,
         isLoading,
         login,
         logout,
-        isAuthenticated: !!user,
+        isAuthenticated,
       }}
     >
       {children}
     </AuthContext.Provider>
-  )
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error("useAuth must be used within AuthProvider")
-  }
-  return context
+  );
 }

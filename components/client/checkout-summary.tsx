@@ -1,71 +1,78 @@
+"use client"
+
 import { Card } from "@/components/ui/card"
+import { useCart,CartItem  } from "@/context/cart-context"
 
 // Mock cart items for summary
-const cartItems = [
-  {
-    id: 1,
-    name: "Premium Wireless Headphones",
-    price: 299.99,
-    quantity: 1,
-  },
-  {
-    id: 2,
-    name: "Luxury Watch",
-    price: 599.99,
-    quantity: 1,
-  },
-]
+
 
 export function CheckoutSummary() {
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+   const { items } = useCart() // ✅ get items from context
+
+  // ✅ Strong typing for reduce
+  const subtotal = items.reduce(
+    (sum: number, item: CartItem) => sum + item.price * item.quantity,
+    0
+  )
+
   const shipping = subtotal > 50 ? 0 : 10
   const tax = subtotal * 0.1
   const total = subtotal + shipping + tax
 
   return (
-    <div className="sticky top-24 space-y-4">
+         <div className="sticky top-24 space-y-4">
       {/* Order Items */}
       <Card className="p-6 space-y-4">
         <h3 className="font-semibold text-lg text-foreground">Order Summary</h3>
 
-        <div className="space-y-3 border-b border-border pb-4">
-          {cartItems.map((item) => (
-            <div key={item.id} className="flex justify-between text-sm">
-              <span className="text-muted-foreground">
-                {item.name} x {item.quantity}
-              </span>
-              <span className="text-foreground font-medium">${(item.price * item.quantity).toFixed(2)}</span>
+        {items.length === 0 ? (
+          <p className="text-muted-foreground text-sm">Your cart is empty.</p>
+        ) : (
+          <div className="space-y-3 border-b border-border pb-4">
+            {items.map((item: CartItem) => (
+              <div key={item.id} className="flex justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {item.name} × {item.quantity}
+                </span>
+                <span className="text-foreground font-medium">
+                  ${(item.price * item.quantity).toFixed(2)}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {items.length > 0 && (
+          <>
+            <div className="space-y-3 border-b border-border pb-4">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span className="text-foreground font-medium">${subtotal.toFixed(2)}</span>
+              </div>
+
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Shipping</span>
+                <span className="text-foreground font-medium">
+                  {shipping === 0 ? (
+                    <span className="text-green-600 dark:text-green-400">Free</span>
+                  ) : (
+                    `$${shipping.toFixed(2)}`
+                  )}
+                </span>
+              </div>
+
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Tax (10%)</span>
+                <span className="text-foreground font-medium">${tax.toFixed(2)}</span>
+              </div>
             </div>
-          ))}
-        </div>
 
-        <div className="space-y-3 border-b border-border pb-4">
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Subtotal</span>
-            <span className="text-foreground font-medium">${subtotal.toFixed(2)}</span>
-          </div>
-
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Shipping</span>
-            <span className="text-foreground font-medium">
-              {shipping === 0 ? (
-                <span className="text-green-600 dark:text-green-400">Free</span>
-              ) : (
-                `$${shipping.toFixed(2)}`
-              )}
-            </span>
-          </div>
-
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Tax (10%)</span>
-            <span className="text-foreground font-medium">${tax.toFixed(2)}</span>
-          </div>
-        </div>
-
-        <div className="flex justify-between text-lg">
-          <span className="font-semibold text-foreground">Total</span>
-          <span className="font-bold text-primary text-xl">${total.toFixed(2)}</span>
-        </div>
+            <div className="flex justify-between text-lg">
+              <span className="font-semibold text-foreground">Total</span>
+              <span className="font-bold text-primary text-xl">${total.toFixed(2)}</span>
+            </div>
+          </>
+        )}
       </Card>
 
       {/* Security Info */}
@@ -73,7 +80,7 @@ export function CheckoutSummary() {
         <p className="text-xs text-muted-foreground">
           <span className="font-semibold text-foreground">🔒 Secure Checkout</span>
           <br />
-          Your information is protected with SSL encryption
+          Your information is protected with SSL encryption.
         </p>
       </Card>
 

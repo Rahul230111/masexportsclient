@@ -5,12 +5,13 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { AuthProvider } from "@/context/auth-context"
 import { CartProvider } from "@/context/cart-context"
+import { Toaster } from "react-hot-toast";
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "PimPom Store - Premium Products",
+  title: "Ecom",
   description: "Discover premium products with professional e-commerce experience",
   generator: "v0.app",
 }
@@ -24,7 +25,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`font-sans antialiased`}>
         <AuthProvider>
-          <CartProvider>{children}</CartProvider>
+          <CartProvider>{children}
+             <Toaster position="bottom-right" reverseOrder={false} />
+          </CartProvider>
         </AuthProvider>
         <Analytics />
       </body>
