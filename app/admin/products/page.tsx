@@ -19,12 +19,15 @@ interface Product {
   quantity: number;
   category: string;
   image: string;
+  mainImage?: string; // ✅ add this field
 }
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // 🟢 Fetch products from API
   const fetchProducts = async () => {
@@ -43,14 +46,19 @@ export default function ProductsPage() {
   }, []);
 
   // 🟠 Delete product
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this product?")) return;
+  const handleDeleteConfirm = async () => {
+    if (!deleteId) return;
+    setDeleting(true);
     try {
-      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}`);
-      setProducts((prev) => prev.filter((p) => p._id !== id));
-      toast.success("Product deleted");
-    } catch (err) {
-      toast.error("Failed to delete product");
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/products/${deleteId}`);
+      setProducts((prev) => prev.filter((p) => p._id !== deleteId));
+      toast.success(" Product deleted successfully");
+      setDeleteId(null);
+    } catch (err: any) {
+      console.error("Delete failed:", err.response?.data || err.message);
+      toast.error(" Failed to delete product");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -107,42 +115,39 @@ export default function ProductsPage() {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <img
-                              src={product.image || "/placeholder.svg"}
-                              alt={product.name}
-                              className="w-10 h-10 rounded object-cover"
-                            />
+  src={
+    product.mainImage?.startsWith("http")
+      ? product.mainImage // full Cloudinary URL
+      : product.mainImage
+      ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/${product.mainImage}` // local fallback
+      : "/placeholder.svg" // placeholder
+  }
+  alt={product.name}
+  className="w-50 h-44 object-cover rounded-lg"
+/>
                             <span className="text-sm font-medium">{product.name}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4 text-sm text-muted-foreground">{product.category}</td>
                         <td className="px-6 py-4 text-sm font-semibold">₹{product.price}</td>
-                        <td className="px-6 py-4">
-                          <Input
-                            type="number"
-                            min={0}
-                            className="w-24"
-                            value={product.quantity}
-                            disabled={updating === product._id}
-                            onChange={(e) =>
-                              handleQuantityChange(product._id, Number(e.target.value))
-                            }
-                          />
+                        <td 
+                          className="px-6 py-4 text-sm font-semibold">{product.quantity}
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
                             <Link href={`/admin/products/${product._id}/edit`}>
-                              <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10">
-                                <Edit2 className="w-4 h-4" />
-                              </Button>
-                            </Link>
+  <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10">
+    <Edit2 className="w-4 h-4" />
+  </Button>
+</Link>
                             <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDelete(product._id)}
-                              className="text-destructive hover:bg-destructive/10"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+  variant="ghost"
+  size="sm"
+  onClick={() => setDeleteId(product._id)}
+  className="text-destructive hover:bg-destructive/10"
+>
+  <Trash2 className="w-4 h-4" />
+</Button>
                           </div>
                         </td>
                       </tr>
@@ -153,6 +158,32 @@ export default function ProductsPage() {
             )}
           </Card>
         </div>
+        {deleteId && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+    <div className="bg-white dark:bg-neutral-900 rounded-xl p-6 shadow-xl max-w-sm w-full text-center">
+      <h2 className="text-lg font-semibold mb-2">Delete Product?</h2>
+      <p className="text-sm text-muted-foreground mb-4">
+        Are you sure you want to delete this product? This action cannot be undone.
+      </p>
+      <div className="flex justify-center gap-3">
+        <Button
+          variant="outline"
+          onClick={() => setDeleteId(null)}
+          disabled={deleting}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="destructive"
+          onClick={handleDeleteConfirm}
+          disabled={deleting}
+        >
+          {deleting ? "Deleting..." : "Delete"}
+        </Button>
+      </div>
+    </div>
+  </div>
+)}
       </AdminLayout>
     </ProtectedRoute>
   );

@@ -107,14 +107,21 @@ export function ProductShowcase() {
                     <Card className="flex-shrink-0 w-72 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer snap-start">
                       {/* Product Image */}
                       <div className="relative h-64 bg-muted overflow-hidden group/image">
-                        <img
-                          src={product.image || "/placeholder.svg"}
-                          alt={product.name}
-                          className="w-full h-full object-cover group-hover/image:scale-110 transition-transform duration-300"
-                        />
-                        <button className="absolute top-3 right-3 bg-white/90 hover:bg-white p-2 rounded-full shadow-md transition-colors">
-                          <Heart className="w-5 h-5 text-destructive" />
-                        </button>
+                       <img
+    src={
+      product.mainImage?.startsWith("http")
+        ? product.mainImage
+        : product.mainImage
+        ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/${product.mainImage}`
+        : "/placeholder.svg"
+    }
+    alt={product.name}
+    className="w-full h-full object-cover group-hover/image:scale-110 transition-transform duration-300"
+    onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
+  />
+  <button className="absolute top-3 right-3 bg-white/90 hover:bg-white p-2 rounded-full shadow-md transition-colors">
+    <Heart className="w-5 h-5 text-destructive" />
+  </button>
                       </div>
 
                       {/* Product Info */}

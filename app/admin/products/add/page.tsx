@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
+import { toast } from "react-hot-toast";
+import { ProtectedRoute } from "@/components/protected-route";
+import { AdminLayout } from "@/components/admin/admin-layout";
+import { AdminHeader } from "@/components/admin/admin-header";
 
 interface ImageData {
   text: string;
@@ -33,6 +37,7 @@ export default function AddProductPage() {
 
   const categories = ["Devine", "Cosmetics", "Accessories"];
 
+  // 🔹 Input Handlers
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -54,51 +59,7 @@ export default function AddProductPage() {
     });
   };
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-
-  const formData = new FormData();
-  formData.append("name", product.name);
-  formData.append("price", product.price);
-  formData.append("quantity", product.quantity);
-  formData.append("category", product.category);
-
-  // 🖼️ Main Image
-  if (mainImage) formData.append("mainImage", mainImage);
-
-  // 📝 Descriptions (text + images)
-  descriptions.forEach((desc, i) => {
-    formData.append(`descriptions[${i}][text]`, desc.text);
-    if (desc.image) formData.append("descImages", desc.image);
-  });
-
-  // ⭐ Features (text + images)
-  features.forEach((feat, i) => {
-    formData.append(`features[${i}][text]`, feat.text);
-    if (feat.image) formData.append("featureImages", feat.image);
-  });
-
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
-      method: "POST",
-      body: formData,
-    });
-
-    const data = await res.json();
-    if (res.ok) {
-      alert("✅ Product added successfully!");
-      console.log("Response:", data);
-    } else {
-      alert("❌ Failed to add product: " + data.message);
-      console.log("Error:", data);
-    }
-  } catch (err) {
-    console.error(err);
-    alert("❌ Something went wrong while adding product.");
-  }
-};
-
-  // 🟢 File picker button component
+  // 🔹 File Upload Button Component
   const FileButton = ({
     label,
     file,
@@ -136,129 +97,189 @@ const handleSubmit = async (e: React.FormEvent) => {
     );
   };
 
+  // 🔹 Form Submit
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append("name", product.name);
+    formData.append("price", product.price);
+    formData.append("quantity", product.quantity);
+    formData.append("category", product.category);
+    if (mainImage) formData.append("mainImage", mainImage);
+
+    const descriptionTexts = descriptions.map((d) => ({ text: d.text }));
+    const featureTexts = features.map((f) => ({ text: f.text }));
+
+    formData.append("descriptions", JSON.stringify(descriptionTexts));
+    formData.append("features", JSON.stringify(featureTexts));
+
+    descriptions.forEach((desc) => {
+      if (desc.image) formData.append("descriptionImages", desc.image);
+    });
+    features.forEach((feat) => {
+      if (feat.image) formData.append("featureImages", feat.image);
+    });
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        toast.success("✅ Product added successfully!");
+        setProduct({ name: "", price: "", quantity: "", category: "" });
+        setMainImage(null);
+        setDescriptions([
+          { text: "", image: null },
+          { text: "", image: null },
+          { text: "", image: null },
+        ]);
+        setFeatures([
+          { text: "", image: null },
+          { text: "", image: null },
+          { text: "", image: null },
+        ]);
+      } else {
+        toast.error("❌ Failed: " + (data.message || "Unknown error"));
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("❌ Something went wrong while adding product.");
+    }
+  };
+
+  // 🔹 Page JSX
   return (
-    <div className="max-w-4xl mx-auto py-10">
-      <Card>
-        <CardContent className="space-y-8">
-          <h1 className="text-2xl font-semibold mb-4">Add New Product</h1>
+    <ProtectedRoute requiredRole="admin">
+      <AdminLayout>
+        <AdminHeader title="Add New Product" />
+        <div className="max-w-4xl mx-auto py-10">
+          <Card>
+            <CardContent className="space-y-8">
+              <h1 className="text-2xl font-semibold mb-4">Add New Product</h1>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* 🧩 Basic Info */}
-            <div className="grid md:grid-cols-2 gap-4">
-              <Input
-                name="name"
-                placeholder="Product Name"
-                value={product.name}
-                onChange={handleInputChange}
-                required
-              />
-              <Input
-                name="price"
-                type="number"
-                placeholder="Price"
-                value={product.price}
-                onChange={handleInputChange}
-                required
-              />
-              <Input
-                name="quantity"
-                type="number"
-                placeholder="Quantity"
-                value={product.quantity}
-                onChange={handleInputChange}
-                required
-              />
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Category
-                </label>
-                <select
-                  name="category"
-                  value={product.category}
-                  onChange={handleInputChange}
-                  className="w-full border border-gray-300 rounded-md p-2 text-sm"
-                  required
-                >
-                  <option value="">Select Category</option>
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* 🧩 Basic Info */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Input
+                    name="name"
+                    placeholder="Product Name"
+                    value={product.name}
+                    onChange={handleInputChange}
+                    required
+                  />
+                  <Input
+                    name="price"
+                    type="number"
+                    placeholder="Price"
+                    value={product.price}
+                    onChange={handleInputChange}
+                    required
+                  />
+                  <Input
+                    name="quantity"
+                    type="number"
+                    placeholder="Quantity"
+                    value={product.quantity}
+                    onChange={handleInputChange}
+                    required
+                  />
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Category
+                    </label>
+                    <select
+                      name="category"
+                      value={product.category}
+                      onChange={handleInputChange}
+                      className="w-full border border-gray-300 rounded-md p-2 text-sm"
+                      required
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* 🧩 Main Image */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Main Product Image
+                  </label>
+                  <FileButton
+                    label="Choose Product Image"
+                    file={mainImage}
+                    onChange={(file) => setMainImage(file)}
+                  />
+                </div>
+
+                {/* 🧩 Descriptions */}
+                <div>
+                  <h2 className="font-semibold mb-2">Descriptions</h2>
+                  {descriptions.map((desc, i) => (
+                    <div
+                      key={i}
+                      className="space-y-2 mb-4 border p-3 rounded-md bg-gray-50"
+                    >
+                      <Textarea
+                        placeholder={`Description ${i + 1}`}
+                        value={desc.text}
+                        onChange={(e) =>
+                          handleArrayChange(i, "text", e.target.value, setDescriptions)
+                        }
+                      />
+                      <FileButton
+                        label="Choose Description Image"
+                        file={desc.image}
+                        onChange={(file) =>
+                          handleArrayChange(i, "image", file, setDescriptions)
+                        }
+                      />
+                    </div>
                   ))}
-                </select>
-              </div>
-            </div>
-
-            {/* 🧩 Main Image */}
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Main Product Image
-              </label>
-              <FileButton
-                label="Choose Product Image"
-                file={mainImage}
-                onChange={(file) => setMainImage(file)}
-              />
-            </div>
-
-            {/* 🧩 Descriptions */}
-            <div>
-              <h2 className="font-semibold mb-2">Descriptions</h2>
-              {descriptions.map((desc, i) => (
-                <div
-                  key={i}
-                  className="space-y-2 mb-4 border p-3 rounded-md bg-gray-50"
-                >
-                  <Textarea
-                    placeholder={`Description ${i + 1}`}
-                    value={desc.text}
-                    onChange={(e) =>
-                      handleArrayChange(i, "text", e.target.value, setDescriptions)
-                    }
-                  />
-                  <FileButton
-                    label="Choose Description Image"
-                    file={desc.image}
-                    onChange={(file) =>
-                      handleArrayChange(i, "image", file, setDescriptions)
-                    }
-                  />
                 </div>
-              ))}
-            </div>
 
-            {/* 🧩 Features */}
-            <div>
-              <h2 className="font-semibold mb-2">Features</h2>
-              {features.map((feat, i) => (
-                <div
-                  key={i}
-                  className="space-y-2 mb-4 border p-3 rounded-md bg-gray-50"
-                >
-                  <Textarea
-                    placeholder={`Feature ${i + 1}`}
-                    value={feat.text}
-                    onChange={(e) =>
-                      handleArrayChange(i, "text", e.target.value, setFeatures)
-                    }
-                  />
-                  <FileButton
-                    label="Choose Feature Image"
-                    file={feat.image}
-                    onChange={(file) =>
-                      handleArrayChange(i, "image", file, setFeatures)
-                    }
-                  />
+                {/* 🧩 Features */}
+                <div>
+                  <h2 className="font-semibold mb-2">Features</h2>
+                  {features.map((feat, i) => (
+                    <div
+                      key={i}
+                      className="space-y-2 mb-4 border p-3 rounded-md bg-gray-50"
+                    >
+                      <Textarea
+                        placeholder={`Feature ${i + 1}`}
+                        value={feat.text}
+                        onChange={(e) =>
+                          handleArrayChange(i, "text", e.target.value, setFeatures)
+                        }
+                      />
+                      <FileButton
+                        label="Choose Feature Image"
+                        file={feat.image}
+                        onChange={(file) =>
+                          handleArrayChange(i, "image", file, setFeatures)
+                        }
+                      />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            <Button type="submit" className="w-full">
-              Save Product
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+                <Button type="submit" className="w-full">
+                  Save Product
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </AdminLayout>
+    </ProtectedRoute>
   );
 }

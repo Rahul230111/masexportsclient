@@ -29,7 +29,7 @@ export default function ProductsPage() {
   }, [])
 
   // ✅ Categories (you can later fetch dynamically if needed)
-  const categories = ["All", "Devine", "Accessories", "Cosmatics", ]
+  const categories = ["All", "Devine", "Accessories", "Cosmetics", ]
 
   // ✅ Filter logic
   const filteredProducts =
@@ -118,15 +118,33 @@ export default function ProductsPage() {
                       <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col">
                         {/* Product Image */}
                         <div className="relative h-48 bg-muted overflow-hidden group">
-                          <img
-                            src={product.image || "/placeholder.svg"}
-                            alt={product.name}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                          />
-                          <button className="absolute top-3 right-3 bg-white/90 hover:bg-white p-2 rounded-full shadow-md transition-colors">
-                            <Heart className="w-5 h-5 text-destructive" />
-                          </button>
-                        </div>
+  {/* Product Image */}
+  <img
+    src={
+      product.mainImage?.startsWith("http")
+        ? product.mainImage
+        : product.mainImage
+        ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/${product.mainImage}`
+        : "/placeholder.svg"
+    }
+    alt={product.name}
+    className="w-full h-full object-cover group-hover/image:scale-110 transition-transform duration-300"
+    onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
+  />
+
+  {/* Favorite Button */}
+  <button className="absolute top-3 right-3 bg-white/90 hover:bg-white p-2 rounded-full shadow-md transition-colors">
+    <Heart className="w-5 h-5 text-destructive" />
+  </button>
+
+  {/* ✅ Low Stock Badge */}
+  {product.quantity <= 5 && (
+    <div className="absolute bottom-2 left-2 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded-md shadow-md">
+      Only {product.quantity} {product.quantity === 1 ? "item" : "items"} left
+    </div>
+  )}
+</div>
+
 
                         {/* Product Info */}
                         <div className="p-4 space-y-3 flex-1 flex flex-col">
