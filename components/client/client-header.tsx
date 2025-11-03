@@ -18,9 +18,9 @@ export function ClientHeader() {
         <div className="flex items-center justify-between h-16">
           {/* 🔹 Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+            {/* <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-lg">M</span>
-            </div>
+            </div> */}
             <span className="font-bold text-lg text-foreground hidden sm:inline">
               MasExports
             </span>

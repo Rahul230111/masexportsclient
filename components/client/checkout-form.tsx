@@ -7,6 +7,17 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useRouter } from "next/navigation"
+import { useCart } from "@/context/cart-context"
+
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
+export {};
+
 
 export function CheckoutForm() {
   const router = useRouter()
@@ -39,6 +50,14 @@ export function CheckoutForm() {
     cvv: "",
   })
 
+    const [discount, setDiscount] = useState(0)
+    const { items } = useCart() 
+  
+    const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+    const shipping =  0 // Always free
+    const tax = (subtotal - discount) * 0.1
+    const total = subtotal - discount + shipping + tax
+  
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
     if (type === "checkbox") {
@@ -49,30 +68,54 @@ export function CheckoutForm() {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+  e.preventDefault()
+  setIsLoading(true)
 
-    try {
-      // Call your backend API to process payment
-      const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      })
+  try {
+    const response = await fetch("/api/razorpay/order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount: total }), 
+    });
 
-      if (!response.ok) {
-        throw new Error("Checkout failed")
-      }
-
-      // Redirect to success page
-      router.push("/order-success")
-    } catch (error) {
-      console.error("Checkout error:", error)
-      alert("Checkout failed. Please try again.")
-    } finally {
-      setIsLoading(false)
+    const data = await response.json();
+    if (!data.orderId) {
+      throw new Error("Unable to create Razorpay order");
     }
+
+    const options = {
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+      amount: total,
+      currency: "INR",
+      name: "Mas Exports",
+      description: "Order Payment",
+      order_id: data.orderId,
+      handler: function (response :any) {
+        alert("Payment successful! Payment ID: " + response.razorpay_payment_id);
+        router.push("/order-success");
+      },
+      prefill: {
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        contact: formData.phone,
+      },
+      notes: {
+        address: formData.address,
+      },
+      theme: { color: "#0d9488" },
+    };
+
+    // checkout
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+
+  } catch (error) {
+    console.error("Razorpay Checkout Error:", error);
+    alert("Something went wrong. Please try again.");
+  } finally {
+    setIsLoading(false);
   }
+};
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -192,7 +235,7 @@ export function CheckoutForm() {
       </Card>
 
       {/* Payment Information */}
-      <Card className="p-6">
+      {/* <Card className="p-6">
         <h3 className="text-lg font-semibold text-foreground mb-4">Payment Information</h3>
 
         <div className="space-y-4">
@@ -255,7 +298,7 @@ export function CheckoutForm() {
             Your payment information is secure and encrypted. We never store your full card details.
           </p>
         </div>
-      </Card>
+      </Card> */}
 
       {/* Submit Button */}
       <Button

@@ -90,11 +90,11 @@ export function CartSummary() {
         </div>
 
         <div className="flex justify-between text-lg">
-  <span className="font-semibold text-foreground">Total</span>
-  <span className="font-bold text-primary text-xl">
-    ₹{total.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-  </span>
-</div>
+          <span className="font-semibold text-foreground">Total</span>
+          <span className="font-bold text-primary text-xl">
+            ₹{total.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </span>
+        </div>
 
         <Link href="/checkout"> 
           <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-6 text-lg font-semibold">
@@ -116,11 +116,11 @@ export function CartSummary() {
         </p>
       </Card>
 
-      <Card className="p-4 bg-primary/5 border-primary/20">
+      {/* <Card className="p-4 bg-primary/5 border-primary/20">
         <p className="text-sm text-muted-foreground">
           <span className="font-semibold text-foreground">30-Day Returns</span> on all items
         </p>
-      </Card>
+      </Card> */}
     </div>
   )
 }

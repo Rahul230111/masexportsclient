@@ -6,12 +6,14 @@ import "./globals.css"
 import { AuthProvider } from "@/context/auth-context"
 import { CartProvider } from "@/context/cart-context"
 import { Toaster } from "react-hot-toast";
+import Script from "next/script"
+
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Ecom",
+  title: "Mas Exports",
   description: "Discover premium products with professional e-commerce experience",
   generator: "v0.app",
 }
@@ -24,6 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans antialiased`}>
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="beforeInteractive" />
         <AuthProvider>
           <CartProvider>{children}
              <Toaster position="bottom-right" reverseOrder={false} />

@@ -38,7 +38,7 @@ export default function OrderSuccessPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Total Amount</span>
-                <span className="font-semibold text-foreground">$1,009.99</span>
+                <span className="font-semibold text-foreground">400</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Estimated Delivery</span>
