@@ -32,7 +32,7 @@ export default function ProductsPage() {
   // 🟢 Fetch products from API
   const fetchProducts = async () => {
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/products`);
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/product`);
       setProducts(res.data);
     } catch (err) {
       toast.error("Failed to load products");
@@ -50,7 +50,7 @@ export default function ProductsPage() {
     if (!deleteId) return;
     setDeleting(true);
     try {
-      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/products/${deleteId}`);
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/product/${deleteId}`);
       setProducts((prev) => prev.filter((p) => p._id !== deleteId));
       toast.success(" Product deleted successfully");
       setDeleteId(null);
@@ -66,7 +66,7 @@ export default function ProductsPage() {
   const handleQuantityChange = async (id: string, value: number) => {
     setUpdating(id);
     try {
-      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}`, { quantity: value });
+      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/product/${id}`, { quantity: value });
       setProducts((prev) =>
         prev.map((p) => (p._id === id ? { ...p, quantity: value } : p))
       );

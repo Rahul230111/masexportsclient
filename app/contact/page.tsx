@@ -53,22 +53,22 @@ export default function ContactPage() {
             <Card className="p-6 text-center">
               <Mail className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="font-semibold text-foreground mb-2">Email</h3>
-              <p className="text-muted-foreground text-sm mb-2">support@.com</p>
+              <p className="text-muted-foreground text-sm mb-2">info@masexport.in</p>
               <p className="text-xs text-muted-foreground">We'll respond within 24 hours</p>
             </Card>
 
             <Card className="p-6 text-center">
               <Phone className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="font-semibold text-foreground mb-2">Phone</h3>
-              <p className="text-muted-foreground text-sm mb-2">+1 (555) 123-4567</p>
+              <p className="text-muted-foreground text-sm mb-2">+91 98417 48880</p>
               <p className="text-xs text-muted-foreground">Mon-Fri, 9AM-6PM EST</p>
             </Card>
 
             <Card className="p-6 text-center">
               <MapPin className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="font-semibold text-foreground mb-2">Address</h3>
-              <p className="text-muted-foreground text-sm mb-2">123 Store Street</p>
-              <p className="text-xs text-muted-foreground">New York, NY 10001</p>
+              <p className="text-muted-foreground text-sm mb-2">No.151/C, Athiyaman Street,Thangam nagar,</p>
+              <p className="text-muted-foreground text-sm ">Gudiyatham,Vellore - 632602</p>
             </Card>
           </div>
 

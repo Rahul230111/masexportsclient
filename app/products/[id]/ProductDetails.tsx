@@ -1,321 +1,221 @@
-"use client"
+"use client";
 
-import { motion, useScroll, useTransform } from "framer-motion"
-import { Product } from "../../data/products"
-import { useRef, useState } from "react"
-import { ClientHeader } from "@/components/client/client-header"
-import { Lora } from "next/font/google"
-import { useCart } from "@/context/cart-context"
-import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, ShoppingCart, Heart } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import axios from "axios";
+import { Button } from "@/components/ui/button";
+import { Minus, Plus, Truck, ShieldCheck, Headphones } from "lucide-react";
+import { ClientLayout } from "@/components/client/client-layout";
+import { useCart } from "@/context/cart-context";
 
 
-interface Props {
-  product: Product
+interface Product {
+  _id: string;
+  name: string;
+  price: number;
+  description?: string;
+  mainImage?: string;
+  features?: string;
 }
-const lora = Lora({
-  subsets: ["latin"],
-  weight: ["400", "600", "700"], // you can adjust if you want bolder or lighter
-})
-export default function ProductDetails({ product }: Props) {
-    const router = useRouter()
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [merged, setMerged] = useState(false)
-  const [quantity, setQuantity] = useState<number>(1)
-  const { items, addToCart } = useCart()
-  
-   
-const inCart = items.some(i => i.id === product.id)
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"],
-  })
 
-  // --- Scroll-based animations after merge ---
-  const scale = useTransform(scrollYProgress, [0, 0.33, 0.66, 1.5], [1.3, 1.2, 1, 2])
-  const x = useTransform(scrollYProgress, [0, 0.33, 0.66, 1], [0, 0, 300, 0])
-  const rotate = useTransform(scrollYProgress, [0, 0.33, 0.66, 1], [0, 0, -25, 0])
-  const opacity = useTransform(scrollYProgress, [0, 0.05, 0.33], [1, 1, 1])
+export default function ProductPage() {
+  const { id } = useParams();
+  const router = useRouter();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [quantity, setQuantity] = useState(1);
+  const [isAdding, setIsAdding] = useState(false);
 
-  // --- Center text animation for Section 1 ---
-  const textOpacity = useTransform(scrollYProgress, [0, 0.1, 0.1, 0.1], [1, 0.1, 0.1, 0.1])
-  const textScale = useTransform(scrollYProgress, [0, 0.5], [2, 2])
+  const { items, addToCart } = useCart();
 
-  // Landing positions
-  const landingScale = 2
+  // Fetch product by ID
+  useEffect(() => {
+    if (!id) return;
+    const fetchProduct = async () => {
+      try {
+        const res = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/product/${id}`
+        );
+        setProduct(res.data);
+      } catch (error) {
+        console.error("Error fetching product:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [id]);
 
-  const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>, product: Product) => {
-  e.preventDefault()
-  addToCart({
-    id: product.id,
-    name: product.name,
-    price: product.price,
-    image: product.image,
-    quantity, // store selected quantity
-  })
-}
-const handleBuyNow = (e: React.MouseEvent<HTMLButtonElement>) => {
-  e.preventDefault()
+  // Add to Cart (only once)
+  const handleAddToCart = async () => {
+    if (!product) return;
+    setIsAdding(true);
 
-  // Check if item already exists in cart
-  const inCart = items.some((i) => i.id === product.id)
+    const isInCart = items.some((item) => item.id === String(product._id));
+    if (isInCart) {
+      setIsAdding(false);
+      return;
+    }
 
-  // Only add to cart if it's not already there
-  if (!inCart) {
-    addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image,
-       quantity: 1, // store selected quantity
-    })
-  }
+    addToCart(
+      {
+        id: String(product._id),
+        name: product.name,
+        price: Number(product.price),
+        image: product.mainImage || "",
+      },
+      quantity
+    );
 
-  // Redirect to cart page
-  router.push("/cart")
-}
-return (
-    <div ref={containerRef} className="relative bg-black min-h-[400vh]">
-      <ClientHeader />
+    
+    setIsAdding(false);
+    setQuantity(1);
+  };
 
-      {/* Landing animation */}
-     {!merged && (
-  <motion.div
-    className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none flex flex-col items-center"
-    initial={{ scale: 0, opacity: 0 }}
-    animate={{ scale: landingScale, opacity: 1 }}
-    transition={{ duration: 1.5, ease: "easeOut" }}
-    onAnimationComplete={() => setMerged(true)}
-  >
-    {/* Bottle / jar body only */}
-    <motion.img
-      src={product.image}
-      alt={product.name}
-      className="w-40 md:w-56 object-contain drop-shadow-2xl"
-    />
-  </motion.div>
-)}
+  // Buy Now
+  const handleBuyNow = async () => {
+    if (!product) return;
+    handleAddToCart();
+    router.push("/cart");
+  };
 
-{/* After merge: move together */}
-{merged && (
-  <motion.div
-    className="fixed top-[60%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none"
-    style={{ scale, x, rotate, opacity }}
-  >
-    {/* Bottle / jar body only */}
-    <motion.img
-      src={product.image}
-      alt={product.name}
-      className="w-40 md:w-56 object-contain drop-shadow-2xl"
-    />
-  </motion.div>
-)}
+  if (loading)
+    return <p className="text-center mt-10 text-gray-500">Loading product...</p>;
+  if (!product)
+    return (
+      <p className="text-center mt-10 text-red-500 font-medium">
+        Product not found.
+      </p>
+    );
 
+  const isInCart = items.some((item) => item.id === String(product._id));
 
-      {/* Section 1 */}
-<div
-  className="relative h-[200vh] w-full"
-  style={{
-    backgroundImage: "url(/bg1.jpg)",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundAttachment: "fixed",
-  }}
->
-  <div className="absolute inset-0 bg-black/40" />
+  return (
+    <ClientLayout>
+      <div className="max-w-6xl mx-auto p-6">
+        <Button onClick={() => router.back()} variant="outline" className="mb-6">
+          ← Back
+        </Button>
 
-  {/* Features Section */}
-  {product.features && (
-  <div className="absolute top-1/2 left-0 w-full -translate-y-1/2 flex justify-between px-5 md:px-10 z-20">
-    {/* Left column */}
-    <div className="flex flex-col gap-25">
-      {product.features.slice(0, 2).map((feature, index) => (
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, x: -100 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6, delay: index * 0.2 }}
-          className="flex items-center gap-4 md:gap-6 flex-row"
-        >
-          <img
-            src={feature.image}
-            alt={feature.title}
-            className="w-22 h-22 md:w-32 md:h-32 rounded-full object-cover shadow-lg flex-shrink-0"
-          />
-          <p className="bg-black/60 px-4 py-2 md:py-5 rounded-xl text-white text-sm sm:text-base md:text-lg font-medium shadow-lg max-w-xs">
-            {feature.title}
-          </p>
-        </motion.div>
-      ))}
-    </div>
-
-    {/* Right column */}
-    <div className="flex flex-col gap-25">
-      {product.features.slice(2, 4).map((feature, index) => (
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, x: 100 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6, delay: index * 0.2 }}
-          className="flex items-center gap-4 md:gap-6 flex-row-reverse"
-        >
-          <img
-            src={feature.image}
-            alt={feature.title}
-            className="w-22 h-22 md:w-32 md:h-32 rounded-full object-cover shadow-lg flex-shrink-0"
-          />
-          <p className="bg-black/60 px-4 py-2 md:py-5 rounded-xl text-white text-sm sm:text-base md:text-lg font-medium shadow-lg max-w-xs">
-            {feature.title}
-          </p>
-        </motion.div>
-      ))}
-    </div>
-  </div>
-)}
-
-
-  {/* Center fading text */}
-  <motion.div
-    className={`fixed top-[44%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 text-5xl md:text-8xl font-bold text-center pointer-events-none select-none ${lora.className}`}
-    style={{
-      opacity: textOpacity,
-      scale: textScale,
-      color: "#888887",
-    }}
-  >
-    E-commerce
-  </motion.div>
-</div>
-
-
-      {/* Section 2 */}
-      <div
-  className="relative h-[150vh] w-full bg-cover bg-center bg-fixed"
-  style={{ backgroundImage: "url(/bg2.jpg)" }}
->
-  {/* Overlay */}
-  <div className="absolute inset-0 bg-black/30" />
-
-  {/* Fixed hand image on the right */}
-  <img src="/hand.png" alt="Side Image" className="absolute top-1/2 right-0 -translate-y-1/2 w-32 md:w-180 object-contain" style={{ top: "60%" }} />
-
-  {/* Zig-Zag Description Section on the LEFT */}
-  {product.descriptionItems && (
-    <div className="absolute top-1/2 left-5 md:left-10 -translate-y-1/2 flex flex-col gap-15 md:mt-10 z-10">
-      {product.descriptionItems.map((item, index) => {
-        const isLeft = index % 2 === 0 // controls zig-zag
-        return (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, x: isLeft ? -100 : 100 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay: index * 0.2 }}
-            className="flex items-center gap-4 md:gap-6 justify-start md:justify-start"
-          >
-            {isLeft && (
-              <img
-                src={item.image}
-                alt={item.title}
-                className="w-10 h-10 md:w-22 md:h-22 rounded-full object-cover shadow-lg"
-              />
-            )}
-
-            <p className="bg-black/60 px-4 py-2 md:py-5 rounded-xl text-white text-sm sm:text-base md:text-lg font-medium shadow-lg max-w-xs">
-              {item.title}
-            </p>
-
-            {!isLeft && (
-              <img
-                src={item.image}
-                alt={item.title}
-                className="w-10 h-10 md:w-22 md:h-22 rounded-full object-cover shadow-lg"
-              />
-            )}
-          </motion.div>
-        )
-      })}
-    </div>
-  )}
-</div>
-
-
-      {/* Section 3 */}
-      <div
-        className="relative h-screen w-full"
-        style={{
-          backgroundImage: "url(/bg3.jpeg)",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundAttachment: "fixed",
-        }}
-      >
-        
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-black/35" />
-        <div
-  className={`absolute top-35 left-1/2 -translate-x-1/2 z-40 text-gray-200 text-2xl sm:text-3xl md:text-6xl font-bold text-center select-none ${lora.className}`}
->
-  {product.name}
-</div>
-
-
-        {/* Right-side button & info group */}
-        <div className="absolute top-1/2 right-50 -translate-y-1/2 flex flex-col items-end gap-5 z-50 text-white">
-          {/* Price & Quantity */}
-          <div className="flex flex-col items-end bg-black/60 px-10 py-4 rounded-2xl shadow-lg">
-            {/* <p className="text-xl font-semibold mb-2 text-center w-full">{product.name}</p> */}
-
-            <div className="flex items-center gap-8">
-              {/* Quantity control */}
-              <div className="flex items-center bg-gray-800 rounded-full px-3 py-1">
-                <button
-                  onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
-                  className="px-2 text-xl font-bold"
-                >
-                  −
-                </button>
-                <span className="px-4 text-lg font-medium">{quantity}</span>
-                <button
-                  onClick={() => setQuantity((prev) => prev + 1)}
-                  className="px-2 text-xl font-bold"
-                >
-                  +
-                </button>
+        <div className="grid md:grid-cols-2 gap-10">
+          {/* LEFT: Image and Description */}
+          <div>
+            {product.mainImage && (
+              <div className="border rounded-2xl overflow-hidden shadow-sm mb-6">
+                <img
+                  src={product.mainImage}
+                  alt={product.name}
+                  className="w-full h-[450px] object-cover"
+                />
               </div>
+            )}
 
-              {/* Price */}
-              <p className="text-xl font-semibold">
-                ₹{(product.price * quantity).toFixed(2)}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold text-foreground border-b pb-2">
+                Description
+              </h2>
+              <p className="text-muted-foreground leading-relaxed">
+                {product.description ||
+                  "This product is crafted with high-quality materials ensuring durability and comfort."}
               </p>
+
+              <div className="mt-6">
+                <h2 className="text-xl font-semibold text-foreground border-b pb-2">
+                  Features
+                </h2>
+                <p className="text-muted-foreground leading-relaxed">
+                  {product.features ||
+                    "Made with premium quality components and designed for long-lasting performance."}
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Buttons */}
-          <div className="flex gap-4">
-            <Button
-  size="lg" // increase size
-  className={`bg-primary hover:bg-primary/90 text-primary-foreground gap-3 px-6 py-4 text-lg ${inCart ? 'opacity-50 cursor-not-allowed' : ''}`}
-  onClick={(e) => !inCart && handleAddToCart(e, product)}
-  disabled={inCart}
->
-  <ShoppingCart className="w-5 h-5" />
-  <span className="hidden sm:inline">{inCart ? "Added" : "Add to Cart"}</span>
-</Button>
+          {/* RIGHT: Product Info & Actions */}
+          <div className="flex flex-col justify-between">
+            <div className="border rounded-2xl p-6 shadow-sm bg-card">
+              <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
+              <p className="text-2xl font-semibold text-primary mb-4">
+                ₹{product.price.toLocaleString("en-IN")}
+              </p>
 
-            <Button
-  size="lg"
-  className="px-6 py-4 bg-green-600 hover:bg-green-700 text-white text-lg font-semibold rounded-full shadow-lg transition-all duration-300"
-  onClick={handleBuyNow}
->
-  Buy Now
-</Button>
+              {/* Quantity Selector */}
+              <div className="flex items-center gap-3 mb-6">
+                <span className="font-medium text-sm text-muted-foreground">
+                  Quantity
+                </span>
+                <div className="flex items-center border rounded-lg">
+                  <button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="px-3 py-2 hover:bg-muted transition-colors"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="px-4 font-semibold">{quantity}</span>
+                  <button
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="px-3 py-2 hover:bg-muted transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex flex-col gap-3 mb-6">
+                <Button
+                  onClick={handleAddToCart}
+                  disabled={isAdding || isInCart}
+                  className={`w-full text-white text-lg py-6 ${
+                    isInCart
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-primary hover:bg-primary/90"
+                  }`}
+                >
+                  {isInCart
+                    ? "Already in Cart"
+                    : isAdding
+                    ? "Adding..."
+                    : "Add to Cart"}
+                </Button>
+
+                <Button
+                  onClick={handleBuyNow}
+                  variant="outline"
+                  className="w-full py-6 text-lg"
+                >
+                  Buy Now
+                </Button>
+              </div>
+
+              {/* Services */}
+              <div className="grid grid-cols-3 text-center border-t pt-4 gap-2 text-sm text-muted-foreground">
+                <div className="flex flex-col items-center">
+                  <Truck className="w-5 h-5 mb-1 text-primary" />
+                  <span>Free Shipping</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <Headphones className="w-5 h-5 mb-1 text-primary" />
+                  <span>24/7 Support</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <ShieldCheck className="w-5 h-5 mb-1 text-primary" />
+                  <span>Secure Payment</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 text-sm text-muted-foreground leading-relaxed">
+              <p>
+                <strong>Note:</strong> Images are for illustration purposes only.
+              </p>
+              <p className="mt-3">
+                Estimated delivery: <strong>3–5 business days</strong>.
+              </p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  )
+    </ClientLayout>
+  );
 }

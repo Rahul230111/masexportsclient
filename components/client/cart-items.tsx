@@ -1,79 +1,69 @@
 "use client"
 
+import { useCart } from "@/context/cart-context"
 import { Card } from "@/components/ui/card"
 import { Trash2, Plus, Minus } from "lucide-react"
 import Link from "next/link"
-import { useCart } from "@/context/cart-context"
 
-interface CartItem {
-  id: number
-  name: string
-  price: number
-  quantity: number
-  image: string
-}
+export function CartItems() {
+  const { items, updateQuantity, removeFromCart } = useCart()
 
-interface CartItemsProps {
-  items: CartItem[]
-}
-
-export function CartItems({ items }: CartItemsProps) {
-  const { updateQuantity, removeFromCart } = useCart()
+  if (items.length === 0) {
+    return <p className="text-center text-muted-foreground">Your cart is empty 🛍️</p>
+  }
 
   return (
     <div className="space-y-4">
       {items.map((item) => (
         <Card key={item.id} className="p-4 md:p-6">
           <div className="flex gap-4 md:gap-6">
-            {/* Product Image */}
             <Link href={`/products/${item.id}`} className="flex-shrink-0">
               <img
-                src={item.image || "/placeholder.svg"}
-                alt={item.name}
-                className="w-24 h-24 md:w-32 md:h-32 object-cover rounded-lg hover:opacity-80 transition-opacity"
-              />
+  src={item.image || "/placeholder.svg"}
+  alt={item.name}
+  className="w-24 h-24 md:w-32 md:h-32 object-cover rounded-lg hover:opacity-80 transition-opacity"
+/>
             </Link>
 
-            {/* Product Details */}
             <div className="flex-1 flex flex-col justify-between">
               <div>
                 <Link href={`/products/${item.id}`} className="hover:text-primary transition-colors">
-                  <h3 className="font-semibold text-foreground text-lg">{item.name}</h3>
+                  <h3 className="font-semibold text-lg">{item.name}</h3>
                 </Link>
-                <p className="text-muted-foreground text-sm mt-1">SKU: PROD-{item.id}</p>
+                <p className="text-sm text-muted-foreground">SKU: PROD-{item.id}</p>
               </div>
 
-              {/* Quantity and Price */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                    className="w-8 h-8 border border-border rounded-lg hover:bg-muted transition-colors flex items-center justify-center"
+                    className="w-8 h-8 border rounded-lg hover:bg-muted flex items-center justify-center"
                   >
                     <Minus className="w-4 h-4" />
                   </button>
-                  <span className="text-foreground font-semibold w-8 text-center">{item.quantity}</span>
+                  <span className="font-semibold w-8 text-center">{item.quantity}</span>
                   <button
                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                    className="w-8 h-8 border border-border rounded-lg hover:bg-muted transition-colors flex items-center justify-center"
+                    className="w-8 h-8 border rounded-lg hover:bg-muted flex items-center justify-center"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
 
                 <div className="text-right">
-                  <p className="text-lg font-bold text-foreground">
+                  <p className="text-lg font-bold">
                     ₹{(item.price * item.quantity).toLocaleString("en-IN")}
                   </p>
-                  <p className="text-sm text-muted-foreground">₹{item.price.toLocaleString("en-IN")} each</p>
+                  <p className="text-sm text-muted-foreground">
+                    ₹{item.price.toLocaleString("en-IN")} each
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Remove Button */}
             <button
               onClick={() => removeFromCart(item.id)}
-              className="flex-shrink-0 text-destructive hover:bg-destructive/10 p-2 rounded-lg transition-colors"
+              className="text-destructive hover:bg-destructive/10 p-2 rounded-lg"
             >
               <Trash2 className="w-5 h-5" />
             </button>

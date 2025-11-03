@@ -8,12 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 
-interface ImageData {
-  text: string;
-  image: File | null;
-  imageUrl?: string;
-}
-
 export default function EditProductPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -29,51 +23,47 @@ export default function EditProductPage() {
   const [mainImage, setMainImage] = useState<File | null>(null);
   const [mainImageUrl, setMainImageUrl] = useState<string>("");
 
-  const [descriptions, setDescriptions] = useState<ImageData[]>([]);
-  const [features, setFeatures] = useState<ImageData[]>([]);
+  const [descriptions, setDescriptions] = useState<string[]>([""]);
+  const [features, setFeatures] = useState<string[]>([""]);
 
-  const categories = ["Devine", "Cosmetics", "Accessories"];
+  const categories = [
+    "Animal & Dairy Products",
+    "Agricultural Products",
+    "Coir & Fiber Products",
+  ];
 
-  // 🟢 Fetch product by ID
+  // 🧠 Dynamic category-wise fields
+  const categoryDescriptions: Record<string, string[]> = {
+    "Animal & Dairy Products": ["Milk Products", "Egg Products", "Meat Items"],
+    "Agricultural Products": ["Fruits", "Vegetables", "Grains"],
+    "Coir & Fiber Products": ["Coir Rope", "Coir Mat", "Coconut Fiber"],
+  };
+
+  // 🟢 Fetch existing product
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${id}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/product/${id}`);
         const data = await res.json();
-
         if (!res.ok) throw new Error(data.message || "Failed to fetch product");
 
         setProduct({
           name: data.name || "",
-          price: data.price || "",
-          quantity: data.quantity || "",
+          price: data.price?.toString() || "",
+          quantity: data.quantity?.toString() || "",
           category: data.category || "",
         });
 
         setMainImageUrl(data.mainImage || "");
-        setDescriptions(
-          data.descriptions?.map((desc: any) => ({
-            text: desc.text,
-            image: null,
-            imageUrl: desc.image,
-          })) || []
-        );
-        setFeatures(
-          data.features?.map((feat: any) => ({
-            text: feat.text,
-            image: null,
-            imageUrl: feat.image,
-          })) || []
-        );
-
-        setLoading(false);
+        setDescriptions(data.descriptions?.length ? data.descriptions : [""]);
+        setFeatures(data.features?.length ? data.features : [""]);
       } catch (error: any) {
-        console.error("Failed to load product", error);
+        console.error(error);
         toast.error(error.message || "Failed to load product");
+      } finally {
         setLoading(false);
       }
     };
-
     fetchProduct();
   }, [id]);
 
@@ -82,70 +72,29 @@ export default function EditProductPage() {
   ) => {
     const { name, value } = e.target;
     setProduct((prev) => ({ ...prev, [name]: value }));
+
+    // Reset category-related fields
+    if (name === "category" && value) {
+      setDescriptions(categoryDescriptions[value] || [""]);
+      setFeatures([""]);
+    }
   };
 
   const handleArrayChange = (
     index: number,
-    field: "text" | "image",
-    value: string | File,
-    setter: React.Dispatch<React.SetStateAction<ImageData[]>>
+    value: string,
+    setter: React.Dispatch<React.SetStateAction<string[]>>
   ) => {
     setter((prev) => {
       const updated = [...prev];
-      if (field === "text") updated[index].text = value as string;
-      else updated[index].image = value as File;
+      updated[index] = value;
       return updated;
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-
-  const formData = new FormData();
-  formData.append("name", product.name);
-  formData.append("price", product.price);
-  formData.append("quantity", product.quantity);
-  formData.append("category", product.category);
-
-  if (mainImage) formData.append("mainImage", mainImage);
-
-  descriptions.forEach((desc, i) => {
-    formData.append(`descriptions[${i}][text]`, desc.text);
-    if (desc.image) formData.append("descriptionImages", desc.image);
-    else if (desc.imageUrl)
-      formData.append(`descriptions[${i}][imageUrl]`, desc.imageUrl);
-  });
-
-  features.forEach((feat, i) => {
-    formData.append(`features[${i}][text]`, feat.text);
-    if (feat.image) formData.append("featureImages", feat.image);
-    else if (feat.imageUrl)
-      formData.append(`features[${i}][imageUrl]`, feat.imageUrl);
-  });
-
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${id}`, {
-      method: "PUT",
-      body: formData,
-    });
-
-    const data = await res.json();
-
-    // ✅ Only show toast AFTER a successful update
-    if (res.ok) {
-      toast.success("✅ Product updated successfully!");
-      // Optional small delay to let toast show before redirect
-      setTimeout(() => {
-        router.push("/admin/products");
-      }, 1000);
-    } else {
-      toast.error(`❌ Failed to update: ${data.message || "Unknown error"}`);
-    }
-  } catch (err: any) {
-    console.error(err);
-    toast.error("❌ Something went wrong while updating product.");
-  }
-};
+  const addNewField = (setter: React.Dispatch<React.SetStateAction<string[]>>) => {
+    setter((prev) => [...prev, ""]);
+  };
 
   const FileButton = ({
     label,
@@ -179,6 +128,37 @@ export default function EditProductPage() {
         />
       </div>
     );
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append("name", product.name);
+    formData.append("price", product.price);
+    formData.append("quantity", product.quantity);
+    formData.append("category", product.category);
+    formData.append("descriptions", JSON.stringify(descriptions));
+    formData.append("features", JSON.stringify(features));
+    if (mainImage) formData.append("mainImage", mainImage);
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/product/${id}`, {
+        method: "PUT",
+        body: formData,
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success("✅ Product updated successfully!");
+        setTimeout(() => router.push("/admin/products"), 1000);
+      } else {
+        toast.error(`❌ Failed: ${data.message || "Unknown error"}`);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("❌ Something went wrong.");
+    }
   };
 
   if (loading) return <p className="text-center py-10">Loading product...</p>;
@@ -251,70 +231,54 @@ export default function EditProductPage() {
               />
             </div>
 
-            {/* 🧩 Descriptions */}
+            {/* 🧩 Category Specific Fields */}
             <div>
-              <h2 className="font-semibold mb-2">Descriptions</h2>
+              <h2 className="font-semibold mb-2">
+                {product.category ? `${product.category} Details` : "Details"}
+              </h2>
+
               {descriptions.map((desc, i) => (
-                <div
+                <Input
                   key={i}
-                  className="space-y-2 mb-4 border p-3 rounded-md bg-gray-50"
-                >
-                  <Textarea
-                    placeholder={`Description ${i + 1}`}
-                    value={desc.text}
-                    onChange={(e) =>
-                      handleArrayChange(i, "text", e.target.value, setDescriptions)
-                    }
-                  />
-                  {desc.imageUrl && !desc.image && (
-                    <img
-                      src={desc.imageUrl}
-                      alt={`Desc ${i + 1}`}
-                      className="w-24 h-24 object-cover rounded border"
-                    />
-                  )}
-                  <FileButton
-                    label="Replace Image"
-                    file={desc.image}
-                    onChange={(file) =>
-                      handleArrayChange(i, "image", file, setDescriptions)
-                    }
-                  />
-                </div>
+                  placeholder={`Description ${i + 1}`}
+                  value={desc}
+                  onChange={(e) =>
+                    handleArrayChange(i, e.target.value, setDescriptions)
+                  }
+                  className="mb-2"
+                />
               ))}
+
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => addNewField(setDescriptions)}
+              >
+                + Add More Description
+              </Button>
             </div>
 
             {/* 🧩 Features */}
             <div>
               <h2 className="font-semibold mb-2">Features</h2>
               {features.map((feat, i) => (
-                <div
+                <Textarea
                   key={i}
-                  className="space-y-2 mb-4 border p-3 rounded-md bg-gray-50"
-                >
-                  <Textarea
-                    placeholder={`Feature ${i + 1}`}
-                    value={feat.text}
-                    onChange={(e) =>
-                      handleArrayChange(i, "text", e.target.value, setFeatures)
-                    }
-                  />
-                  {feat.imageUrl && !feat.image && (
-                    <img
-                      src={feat.imageUrl}
-                      alt={`Feature ${i + 1}`}
-                      className="w-24 h-24 object-cover rounded border"
-                    />
-                  )}
-                  <FileButton
-                    label="Replace Image"
-                    file={feat.image}
-                    onChange={(file) =>
-                      handleArrayChange(i, "image", file, setFeatures)
-                    }
-                  />
-                </div>
+                  placeholder={`Feature ${i + 1}`}
+                  value={feat}
+                  onChange={(e) =>
+                    handleArrayChange(i, e.target.value, setFeatures)
+                  }
+                  className="mb-2"
+                />
               ))}
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => addNewField(setFeatures)}
+              >
+                + Add More Feature
+              </Button>
             </div>
 
             <Button type="submit" className="w-full">

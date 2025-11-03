@@ -35,7 +35,7 @@ export function CheckoutSummary() {
                   {item.name} × {item.quantity}
                 </span>
                 <span className="text-foreground font-medium">
-                  ${(item.price * item.quantity).toFixed(2)}
+                  ₹{(item.price * item.quantity).toFixed(2)}
                 </span>
               </div>
             ))}
@@ -47,7 +47,7 @@ export function CheckoutSummary() {
             <div className="space-y-3 border-b border-border pb-4">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span className="text-foreground font-medium">${subtotal.toFixed(2)}</span>
+                <span className="text-foreground font-medium">₹{subtotal.toFixed(2)}</span>
               </div>
 
               <div className="flex justify-between text-sm">
@@ -63,13 +63,13 @@ export function CheckoutSummary() {
 
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Tax (10%)</span>
-                <span className="text-foreground font-medium">${tax.toFixed(2)}</span>
+                <span className="text-foreground font-medium">₹{tax.toFixed(2)}</span>
               </div>
             </div>
 
             <div className="flex justify-between text-lg">
               <span className="font-semibold text-foreground">Total</span>
-              <span className="font-bold text-primary text-xl">${total.toFixed(2)}</span>
+              <span className="font-bold text-primary text-xl">₹{total.toFixed(2)}</span>
             </div>
           </>
         )}

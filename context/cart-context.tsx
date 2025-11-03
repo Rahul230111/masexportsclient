@@ -2,24 +2,26 @@
 
 import type React from "react"
 import { createContext, useContext, useState, useEffect } from "react"
+import { toast } from "react-hot-toast"
 
 export interface CartItem {
-  id: number
-  name: string
-  price: number
-  quantity: number
-  image: string
+  id: string; // ✅ must be string
+  name: string;
+  price: number;
+  image?: string;
+  quantity: number;
 }
 
 interface CartContextType {
   items: CartItem[]
   addToCart: (product: Omit<CartItem, "quantity">, quantity?: number) => void
-  removeFromCart: (id: number) => void
-  updateQuantity: (id: number, quantity: number) => void
+  removeFromCart: (id: string) => void          // ✅ string
+  updateQuantity: (id: string, quantity: number) => void // ✅ string
   clearCart: () => void
   totalItems: number
   totalPrice: number
 }
+
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
@@ -47,29 +49,33 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [items, isHydrated])
 
-  const addToCart = (product: Omit<CartItem, "quantity">, quantity: number = 1) => {
-  setItems((prevItems) => {
-    const existingItem = prevItems.find((item) => item.id === product.id)
-    if (existingItem) {
-      return prevItems.map((item) =>
+ const addToCart = (product: Omit<CartItem, "quantity">, quantity = 1) => {
+  setItems((prev) => {
+    const exists = prev.find((item) => item.id === product.id)
+    if (exists) {
+      toast.success(`${product.name} quantity updated`)
+      return prev.map((item) =>
         item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
       )
     }
-    return [...prevItems, { ...product, quantity }]
+    toast.success(`${product.name} added to cart`)
+    return [...prev, { ...product, quantity }]
   })
 }
 
-  const removeFromCart = (id: number) => {
-    setItems((prevItems) => prevItems.filter((item) => item.id !== id))
-  }
+  const removeFromCart = (id: string) => {
+  setItems((prevItems) => prevItems.filter((item) => item.id !== id))
+}
 
-  const updateQuantity = (id: number, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(id)
-      return
-    }
-    setItems((prevItems) => prevItems.map((item) => (item.id === id ? { ...item, quantity } : item)))
+const updateQuantity = (id: string, quantity: number) => {
+  if (quantity <= 0) {
+    removeFromCart(id)
+    return
   }
+  setItems((prevItems) =>
+    prevItems.map((item) => (item.id === id ? { ...item, quantity } : item))
+  )
+}
 
   const clearCart = () => {
     setItems([])

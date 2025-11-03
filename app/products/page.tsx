@@ -19,7 +19,7 @@ export default function ProductsPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/products")
+        const res = await axios.get("http://localhost:5000/api/product")
         setProducts(res.data)
       } catch (error) {
         console.error("Failed to fetch products:", error)
@@ -29,7 +29,7 @@ export default function ProductsPage() {
   }, [])
 
   // ✅ Categories (you can later fetch dynamically if needed)
-  const categories = ["All", "Devine", "Accessories", "Cosmetics", ]
+  const categories = ["All", "Agricultural Products", "Animal & Dairy Products", "Coir & Fiber Products", ]
 
   // ✅ Filter logic
   const filteredProducts =

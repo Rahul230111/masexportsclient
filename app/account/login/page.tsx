@@ -1,95 +1,69 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card } from "@/components/ui/card"
-import Link from "next/link"
-import toast from "react-hot-toast"
-import { useAuth } from "@/context/auth-context"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import Link from "next/link";
+import toast from "react-hot-toast";
+import { useAuth } from "@/context/auth-context";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
-  const { setUser } = useAuth() // ✅ use context to update user immediately
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const { setUser } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    setIsLoading(true)
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
     try {
-      // 🔹 Try admin login first
-      const adminRes = await fetch("http://localhost:5000/api/admin/login", {
+      const res = await fetch("http://localhost:5000/api/user/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
-      })
+      });
 
-      if (adminRes.ok) {
-        const adminData = await adminRes.json()
-        const finalUser = { ...adminData, role: "admin", _id: adminData._id }
+      const data = await res.json();
 
-        localStorage.setItem("token", adminData.token)
-        localStorage.setItem("user", JSON.stringify(finalUser))
-        setUser(finalUser) // ✅ instantly updates header
-        toast.success("Welcome back, Admin!")
-        router.push("/")
-        router.refresh()
-return
-        
+      if (!res.ok) {
+        const message = data?.message || "Invalid email or password";
+        toast.error(message);
+        setError(message);
+        return;
       }
 
-      // 🔹 If admin login failed, try user login
-      const userRes = await fetch("http://localhost:5000/api/users/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      })
+      const userData = data.data || data.user || data;
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(userData));
+      setUser(userData);
 
-      if (userRes.ok) {
-        const userData = await userRes.json()
-        const finalUser = userData.user || { ...userData, role: "customer", _id: userData._id }
-
-        localStorage.setItem("token", userData.token)
-        localStorage.setItem("user", JSON.stringify(finalUser))
-        setUser(finalUser) // ✅ instantly updates header
-        toast.success("Login Successfully!")
-router.push("/")
-router.refresh()
-return
+      // ✅ Redirect only if admin
+      if (userData.role === "admin") {
+        toast.success("Welcome back, Admin!");
+        router.push("/admin/dashboard");
+        router.refresh();
+        return; // ⛔ stop execution here
       }
 
-      // 🔹 Both failed
-      const adminMsg = await safeParseJsonMessage(adminRes)
-      const userMsg = await safeParseJsonMessage(userRes)
-      const message = adminMsg || userMsg || "Invalid credentials"
-      setError(message)
-      toast.error(message)
+      // otherwise normal user login (you can remove this if not needed)
+      toast.success("Login successful!");
+      router.push("/");
+      router.refresh();
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Login failed"
-      setError(message)
-      toast.error(message)
+      const message =
+        err instanceof Error ? err.message : "Something went wrong!";
+      toast.error(message);
+      setError(message);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
-
-  // helper: safely extract message from response
-  async function safeParseJsonMessage(res: Response | undefined) {
-    try {
-      if (!res) return null
-      const json = await res.json().catch(() => null)
-      if (!json) return null
-      return json.message || json.error || null
-    } catch {
-      return null
-    }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 flex items-center justify-center p-4">
@@ -110,7 +84,10 @@ return
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Email Address
               </label>
               <Input
@@ -125,7 +102,10 @@ return
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Password
               </label>
               <Input
@@ -146,17 +126,23 @@ return
         </Card>
 
         <div className="mt-6 text-center text-sm text-muted-foreground">
-          <p>
+          {/* <p>
             Don’t have an account?{" "}
-            <Link href="/account/login/sign-in" className="text-primary hover:underline font-medium">
+            <Link
+              href="/account/login/sign-in"
+              className="text-primary hover:underline font-medium"
+            >
               Create New Account
             </Link>
-          </p>
-          <Link href="/" className="hover:text-foreground transition-colors mt-2 block">
+          </p> */}
+          <Link
+            href="/"
+            className="hover:text-foreground transition-colors mt-2 block"
+          >
             Back to Store
           </Link>
         </div>
       </div>
     </div>
-  )
+  );
 }

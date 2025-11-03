@@ -26,20 +26,19 @@ export default function AboutPage() {
           {/* Our Story */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16 items-center">
             <div>
-              <h2 className="text-3xl font-bold text-foreground mb-4">Our Story</h2>
+              <h2 className="text-3xl font-bold text-foreground mb-4">Welcome To MAS Exports</h2>
               <p className="text-muted-foreground mb-4 leading-relaxed">
-                Welcome to E-com, your trusted destination for all devotional and spiritual needs.
-We believe that worship is not just a ritual — it’s a heartfelt connection between you and the divine. Our mission is to bring you the finest collection of pooja essentials, idols, and spiritual accessories that add purity and positivity to your prayers and home.
+                MAS Export is a leading global export company that specializes in exporting high-quality products to businesses worldwide. We offer a diverse range of products, including Vegetables and spices, Coir and Tamarind goods, among others.
               </p>
               <p className="text-muted-foreground mb-4 leading-relaxed">
-                we offer a wide range of products including incense sticks, diyas, brass lamps, idols of deities, pooja samagri, rudraksha malas, yantras, temple décor items, and more. Every product is carefully selected to maintain traditional values while ensuring the highest quality.
+                Our team of experts is dedicated to providing exceptional service and support to all our clients, no matter the size of the order. We take pride in our ability to source the best products at competitive prices, while also ensuring that our clients receive personalized attention throughout the entire process.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-               Whether you’re preparing for a daily pooja, festival, or special occasion, our store is here to provide everything you need for a complete and divine experience. We take pride in being a part of your spiritual journey — spreading light, peace, and devotion with every product we deliver.
+               At MAS Export, we are committed to building long-term relationships with our clients and helping them succeed in the global market. We have extensive experience in international trade, and our expertise ensures that our clients receive timely and reliable deliveries, every time.
               </p>
             </div>
             <div className="bg-muted rounded-lg h-96 flex items-center justify-center">
-              <img src="/about.png" alt="Our Team" className="w-full h-full object-cover rounded-lg" />
+              <img src="/about.jpg" alt="Our Team" className="w-full h-full object-cover rounded-lg" />
             </div>
           </div>
 

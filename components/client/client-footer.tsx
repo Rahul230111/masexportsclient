@@ -8,8 +8,8 @@ export function ClientFooter() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Brand */}
           <div>
-            <h3 className="font-bold text-lg text-foreground mb-4">E-com</h3>
-            <p className="text-sm text-muted-foreground">Premium products for Pooja Essentials.</p>
+            <h3 className="font-bold text-lg text-foreground mb-4">MAS Exports</h3>
+            <p className="text-sm text-muted-foreground">We Produce Vegetable & Fruits from farmers with Good Agricultural Practices and Confectionery from Suppliers.</p>
           </div>
 
           {/* Quick Links */}
@@ -62,15 +62,15 @@ export function ClientFooter() {
             <ul className="space-y-3 text-sm">
               <li className="flex items-center gap-2 text-muted-foreground">
                 <Mail className="w-4 h-4" />
-                support@.com
+                info@masexport.in
               </li>
               <li className="flex items-center gap-2 text-muted-foreground">
                 <Phone className="w-4 h-4" />
-                +1 (555) 123-4567
+                +91 98417 48880
               </li>
               <li className="flex items-center gap-2 text-muted-foreground">
                 <MapPin className="w-4 h-4" />
-                123 Store St, City, State
+                No.151/C, Athiyaman Street,Thangam nagar,Gudiyatham,Vellore - 632602
               </li>
             </ul>
           </div>

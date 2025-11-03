@@ -4,18 +4,22 @@ export interface Feature {
 }
 
 export interface Product {
-  id: number
+ _id: string;
   name: string
   price: number
-  image: string   // bottle
-  
-  descriptionItems?: Feature[]
-  features?: Feature[]   // new features array
+  description?: string
+  image?: string
+  mainImage?: string   // ✅ added
+  quantity?: number
+  category?: string
+  features?: { title: string; image: string }[]
+  descriptionItems?: { title: string; image: string }[]
 }
+
 
 export const products: Product[] = [
   { 
-    id: 1, 
+    _id: "1", 
     name: "Sambarani Stick", 
     price: 99, 
     image: "/creame.png", 

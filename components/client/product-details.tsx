@@ -15,6 +15,7 @@ interface Product {
   inStock: boolean
   category: string
   image?: string
+  mainImage?: string   // ✅ added
 }
 
 interface ProductDetailsProps {
@@ -31,11 +32,11 @@ export function ProductDetails({ product }: ProductDetailsProps) {
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
       addToCart({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.image || "/placeholder.svg",
-      })
+  id: String(product.id),
+  name: product.name,
+  price: Number(product.price),
+  image: product.mainImage || product.image || "", // ✅ fallback chain
+}, quantity);
     }
     setQuantity(1)
   }

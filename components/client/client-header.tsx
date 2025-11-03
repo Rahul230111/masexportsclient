@@ -1,17 +1,14 @@
 "use client"
 
 import Link from "next/link"
-import { useAuth } from "@/context/auth-context"
 import { useCart } from "@/context/cart-context"
 import { Button } from "@/components/ui/button"
-import { ShoppingCart, User, Menu, X } from "lucide-react"
+import { ShoppingCart, Menu, X } from "lucide-react"
 import { useState } from "react"
 
 export function ClientHeader() {
-  const { user, logout } = useAuth()
   const { totalItems } = useCart()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  
 
   const toggleMenu = () => setMobileMenuOpen((prev) => !prev)
 
@@ -22,9 +19,11 @@ export function ClientHeader() {
           {/* 🔹 Logo */}
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">E</span>
+              <span className="text-primary-foreground font-bold text-lg">M</span>
             </div>
-            <span className="font-bold text-lg text-foreground hidden sm:inline">E-com</span>
+            <span className="font-bold text-lg text-foreground hidden sm:inline">
+              MasExports
+            </span>
           </Link>
 
           {/* 🔹 Desktop Navigation */}
@@ -54,46 +53,6 @@ export function ClientHeader() {
               </Button>
             </Link>
 
-            {/* 🔹 Admin or User Button */}
-            {user ? (
-              user.role === "admin" ? (
-                <Link href="/admin/dashboard">
-                  <Button variant="outline" size="sm" className="hidden sm:inline-flex">
-                    Admin Dashboard
-                  </Button>
-                </Link>
-              ) : (
-                  <Link href="/profile">
-                    <Button variant="outline" size="sm" className="hidden sm:inline-flex">
-                      {user.name}
-                    </Button>
-                  </Link>
-              )
-            ) : null}
-
-            {/* 🔹 Auth Buttons */}
-            {user ? (
-              <Button
-                onClick={logout}
-                variant="outline"
-                size="sm"
-                className="hidden sm:inline-flex"
-              >
-                Logout
-              </Button>
-            ) : (
-              <Link href="/account/login">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="hidden sm:inline-flex"
-                >
-                  <User className="w-4 h-4 mr-2" />
-                  Login
-                </Button>
-              </Link>
-            )}
-
             {/* 🔹 Mobile Menu Toggle */}
             <button
               onClick={toggleMenu}
@@ -117,42 +76,6 @@ export function ClientHeader() {
                 {item}
               </Link>
             ))}
-
-            {/* 🔹 Mobile user/admin button */}
-            {user ? (
-              user.role === "admin" ? (
-                <Link href="/admin/dashboard" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="outline" className="w-full">
-                    Admin Dashboard
-                  </Button>
-                </Link>
-              ) : (
-                <Link href="/profile" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="outline" className="w-full">
-                      {user.name}
-                    </Button>
-                  </Link>
-              )
-            ) : null}
-
-            {user ? (
-              <Button
-                onClick={() => {
-                  logout()
-                  setMobileMenuOpen(false)
-                }}
-                variant="outline"
-                className="w-full"
-              >
-                Logout
-              </Button>
-            ) : (
-              <Link href="/account/login" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="outline" className="w-full">
-                  Login
-                </Button>
-              </Link>
-            )}
           </nav>
         )}
       </div>
