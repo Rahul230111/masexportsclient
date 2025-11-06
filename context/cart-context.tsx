@@ -5,11 +5,12 @@ import { createContext, useContext, useState, useEffect } from "react"
 import { toast } from "react-hot-toast"
 
 export interface CartItem {
-  id: string; // ✅ must be string
+  id: string; 
   name: string;
   price: number;
   image?: string;
   quantity: number;
+  unitType?: "unit" | "weight";
 }
 
 interface CartContextType {
@@ -58,9 +59,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
       )
     }
-    toast.success(`${product.name} added to cart`)
+   
     return [...prev, { ...product, quantity }]
   })
+   toast.success(`${product.name} added to cart`)
 }
 
   const removeFromCart = (id: string) => {

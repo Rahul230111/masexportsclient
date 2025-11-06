@@ -18,6 +18,7 @@ export default function EditProductPage() {
     price: "",
     quantity: "",
     category: "",
+    unitType: "unit", // default unit
   });
 
   const [mainImage, setMainImage] = useState<File | null>(null);
@@ -32,7 +33,6 @@ export default function EditProductPage() {
     "Coir & Fiber Products",
   ];
 
-  // 🧠 Dynamic category-wise fields
   const categoryDescriptions: Record<string, string[]> = {
     "Animal & Dairy Products": ["Milk Products", "Egg Products", "Meat Items"],
     "Agricultural Products": ["Fruits", "Vegetables", "Grains"],
@@ -52,6 +52,7 @@ export default function EditProductPage() {
           price: data.price?.toString() || "",
           quantity: data.quantity?.toString() || "",
           category: data.category || "",
+          unitType: data.unitType || "unit",
         });
 
         setMainImageUrl(data.mainImage || "");
@@ -73,7 +74,6 @@ export default function EditProductPage() {
     const { name, value } = e.target;
     setProduct((prev) => ({ ...prev, [name]: value }));
 
-    // Reset category-related fields
     if (name === "category" && value) {
       setDescriptions(categoryDescriptions[value] || [""]);
       setFeatures([""]);
@@ -138,6 +138,7 @@ export default function EditProductPage() {
     formData.append("price", product.price);
     formData.append("quantity", product.quantity);
     formData.append("category", product.category);
+    formData.append("unitType", product.unitType); // ✅ include unitType
     formData.append("descriptions", JSON.stringify(descriptions));
     formData.append("features", JSON.stringify(features));
     if (mainImage) formData.append("mainImage", mainImage);
@@ -170,7 +171,7 @@ export default function EditProductPage() {
           <h1 className="text-2xl font-semibold mb-4">Edit Product</h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* 🧩 Basic Info */}
+            {/* Basic Info */}
             <div className="grid md:grid-cols-2 gap-4">
               <Input
                 name="name"
@@ -196,6 +197,19 @@ export default function EditProductPage() {
                 required
               />
               <div>
+                <label className="block text-sm font-medium mb-1">Unit Type</label>
+                <select
+                  name="unitType"
+                  value={product.unitType}
+                  onChange={handleInputChange}
+                  className="w-full border border-gray-300 rounded-md p-2 text-sm"
+                  required
+                >
+                  <option value="unit">Unit</option>
+                  <option value="weight">Grams / Kg</option>
+                </select>
+              </div>
+              <div>
                 <label className="block text-sm font-medium mb-1">Category</label>
                 <select
                   name="category"
@@ -214,7 +228,7 @@ export default function EditProductPage() {
               </div>
             </div>
 
-            {/* 🧩 Main Image */}
+            {/* Main Image */}
             <div>
               <label className="block text-sm font-medium mb-1">Main Image</label>
               {mainImageUrl && !mainImage && (
@@ -231,12 +245,11 @@ export default function EditProductPage() {
               />
             </div>
 
-            {/* 🧩 Category Specific Fields */}
+            {/* Descriptions */}
             <div>
               <h2 className="font-semibold mb-2">
                 {product.category ? `${product.category} Details` : "Details"}
               </h2>
-
               {descriptions.map((desc, i) => (
                 <Input
                   key={i}
@@ -248,7 +261,6 @@ export default function EditProductPage() {
                   className="mb-2"
                 />
               ))}
-
               <Button
                 type="button"
                 variant="secondary"
@@ -258,7 +270,7 @@ export default function EditProductPage() {
               </Button>
             </div>
 
-            {/* 🧩 Features */}
+            {/* Features */}
             <div>
               <h2 className="font-semibold mb-2">Features</h2>
               {features.map((feat, i) => (

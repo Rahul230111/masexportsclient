@@ -16,6 +16,7 @@ export default function AddProductPage() {
     price: "",
     quantity: "",
     category: "",
+    unitType: "unit", // default: "unit" or "weight"
   });
 
   const [mainImage, setMainImage] = useState<File | null>(null);
@@ -28,6 +29,7 @@ export default function AddProductPage() {
     "Coir & Fiber Products",
   ];
 
+  // Input change handler
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -35,6 +37,7 @@ export default function AddProductPage() {
     setProduct((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Array change handler
   const handleArrayChange = (
     index: number,
     value: string,
@@ -47,10 +50,12 @@ export default function AddProductPage() {
     });
   };
 
+  // Add new array field
   const addNewField = (setter: React.Dispatch<React.SetStateAction<string[]>>) => {
     setter((prev) => [...prev, ""]);
   };
 
+  // File input component
   const FileButton = ({
     label,
     file,
@@ -85,6 +90,7 @@ export default function AddProductPage() {
     );
   };
 
+  // Form submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -93,6 +99,7 @@ export default function AddProductPage() {
     formData.append("price", product.price);
     formData.append("quantity", product.quantity);
     formData.append("category", product.category);
+    formData.append("unitType", product.unitType); // Added unit type
 
     if (mainImage) formData.append("mainImage", mainImage);
     formData.append("descriptions", JSON.stringify(descriptions));
@@ -108,7 +115,7 @@ export default function AddProductPage() {
 
       if (res.ok) {
         toast.success("✅ Product added successfully!");
-        setProduct({ name: "", price: "", quantity: "", category: "" });
+        setProduct({ name: "", price: "", quantity: "", category: "", unitType: "unit" });
         setMainImage(null);
         setDescriptions([""]);
         setFeatures([""]);
@@ -124,17 +131,16 @@ export default function AddProductPage() {
   return (
     <ProtectedRoute requiredRole="admin">
       <AdminLayout>
-        <AdminHeader title="Add New Product" 
-        />
+        <AdminHeader title="Add New Product" />
         <div className="max-w-4xl mx-auto py-10">
           <div className="flex justify-end max-w-4xl mx-auto mt-4 mb-10">
-  <Button
-    variant="outline"
-    onClick={() => (window.location.href = "/admin/products")}
-  >
-    ← Back to Products
-  </Button>
-</div>
+            <Button
+              variant="outline"
+              onClick={() => (window.location.href = "/admin/products")}
+            >
+              ← Back to Products
+            </Button>
+          </div>
           <Card>
             <CardContent className="space-y-8">
               <h1 className="text-2xl font-semibold mb-4">Add New Product</h1>
@@ -157,14 +163,30 @@ export default function AddProductPage() {
                     onChange={handleInputChange}
                     required
                   />
-                  <Input
-                    name="quantity"
-                    type="number"
-                    placeholder="Quantity"
-                    value={product.quantity}
-                    onChange={handleInputChange}
-                    required
-                  />
+                  {/* Quantity + Unit Type */}
+                  <div>
+                    <Input
+                      name="quantity"
+                      type="number"
+                      placeholder={
+                        product.unitType === "unit"
+                          ? "Quantity (Units)"
+                          : "Weight (grams/kg)"
+                      }
+                      value={product.quantity}
+                      onChange={handleInputChange}
+                      required
+                    />
+                    <select
+                      name="unitType"
+                      value={product.unitType}
+                      onChange={handleInputChange}
+                      className="mt-2 w-full border border-gray-300 rounded-md p-2 text-sm"
+                    >
+                      <option value="unit">Unit</option>
+                      <option value="weight">Grams/KG</option>
+                    </select>
+                  </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">
                       Category

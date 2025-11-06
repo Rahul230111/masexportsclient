@@ -8,7 +8,6 @@ import { Minus, Plus, Truck, ShieldCheck, Headphones } from "lucide-react";
 import { ClientLayout } from "@/components/client/client-layout";
 import { useCart } from "@/context/cart-context";
 
-
 interface Product {
   _id: string;
   name: string;
@@ -16,6 +15,7 @@ interface Product {
   description?: string;
   mainImage?: string;
   features?: string;
+  unitType?: "unit" | "weight";
 }
 
 export default function ProductPage() {
@@ -23,20 +23,19 @@ export default function ProductPage() {
   const router = useRouter();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
-  const [quantity, setQuantity] = useState(1);
-  const [isAdding, setIsAdding] = useState(false);
+  const [localQty, setLocalQty] = useState(0); // Track qty for local add
 
-  const { items, addToCart } = useCart();
+  const { items, addToCart, updateQuantity, removeFromCart } = useCart();
 
-  // Fetch product by ID
   useEffect(() => {
     if (!id) return;
     const fetchProduct = async () => {
       try {
-        const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/product/${id}`
-        );
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/product/${id}`);
         setProduct(res.data);
+        // Set local quantity for products not yet in cart
+        const cartItem = items.find((item) => item.id === res.data._id);
+        setLocalQty(cartItem?.quantity ?? 0);
       } catch (error) {
         console.error("Error fetching product:", error);
       } finally {
@@ -44,40 +43,7 @@ export default function ProductPage() {
       }
     };
     fetchProduct();
-  }, [id]);
-
-  // Add to Cart (only once)
-  const handleAddToCart = async () => {
-    if (!product) return;
-    setIsAdding(true);
-
-    const isInCart = items.some((item) => item.id === String(product._id));
-    if (isInCart) {
-      setIsAdding(false);
-      return;
-    }
-
-    addToCart(
-      {
-        id: String(product._id),
-        name: product.name,
-        price: Number(product.price),
-        image: product.mainImage || "",
-      },
-      quantity
-    );
-
-    
-    setIsAdding(false);
-    setQuantity(1);
-  };
-
-  // Buy Now
-  const handleBuyNow = async () => {
-    if (!product) return;
-    handleAddToCart();
-    router.push("/cart");
-  };
+  }, [id, items]);
 
   if (loading)
     return <p className="text-center mt-10 text-gray-500">Loading product...</p>;
@@ -88,7 +54,54 @@ export default function ProductPage() {
       </p>
     );
 
-  const isInCart = items.some((item) => item.id === String(product._id));
+  const cartItem = items.find((item) => item.id === product._id);
+  const qty = cartItem?.quantity ?? localQty;
+
+  const isInCart = qty > 0;
+
+  const initialQty = product.unitType === "weight" ? 0.25 : 1;
+  const step = product.unitType === "weight" ? 0.25 : 1;
+
+  const handleAddToCart = () => {
+    if (!product) return;
+    if (!isInCart) {
+      addToCart(
+        {
+          id: product._id,
+          name: product.name,
+          price: product.price,
+          image: product.mainImage || "",
+          unitType: product.unitType,
+        },
+        initialQty
+      );
+      setLocalQty(initialQty);
+    }
+  };
+
+  const handleIncrement = () => {
+    if (!product) return;
+    const newQty = qty + step;
+    if (cartItem) updateQuantity(product._id, newQty);
+    else setLocalQty(newQty);
+  };
+
+  const handleDecrement = () => {
+    if (!product) return;
+    const newQty = qty - step;
+    if (newQty <= 0) {
+      if (cartItem) removeFromCart(product._id);
+      setLocalQty(0);
+    } else {
+      if (cartItem) updateQuantity(product._id, newQty);
+      else setLocalQty(newQty);
+    }
+  };
+
+  const handleBuyNow = () => {
+    handleAddToCart();
+    router.push("/cart");
+  };
 
   return (
     <ClientLayout>
@@ -98,7 +111,7 @@ export default function ProductPage() {
         </Button>
 
         <div className="grid md:grid-cols-2 gap-10">
-          {/* LEFT: Image and Description */}
+          {/* LEFT: Image & Description */}
           <div>
             {product.mainImage && (
               <div className="border rounded-2xl overflow-hidden shadow-sm mb-6">
@@ -109,29 +122,25 @@ export default function ProductPage() {
                 />
               </div>
             )}
-
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-foreground border-b pb-2">
                 Description
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                {product.description ||
-                  "This product is crafted with high-quality materials ensuring durability and comfort."}
+                {product.description || "High-quality product for your needs."}
               </p>
-
               <div className="mt-6">
                 <h2 className="text-xl font-semibold text-foreground border-b pb-2">
                   Features
                 </h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  {product.features ||
-                    "Made with premium quality components and designed for long-lasting performance."}
+                  {product.features || "Premium quality and long-lasting performance."}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* RIGHT: Product Info & Actions */}
+          {/* RIGHT: Info & Actions */}
           <div className="flex flex-col justify-between">
             <div className="border rounded-2xl p-6 shadow-sm bg-card">
               <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
@@ -140,56 +149,48 @@ export default function ProductPage() {
               </p>
 
               {/* Quantity Selector */}
-              <div className="flex items-center gap-3 mb-6">
-                <span className="font-medium text-sm text-muted-foreground">
-                  Quantity
-                </span>
-                <div className="flex items-center border rounded-lg">
-                  <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="px-3 py-2 hover:bg-muted transition-colors"
-                  >
-                    <Minus className="w-4 h-4" />
-                  </button>
-                  <span className="px-4 font-semibold">{quantity}</span>
-                  <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="px-3 py-2 hover:bg-muted transition-colors"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
+              {isInCart && (
+                <div className="flex items-center gap-3 mb-6">
+                  <span className="font-medium text-sm text-muted-foreground">Quantity</span>
+                  <div className="flex items-center border rounded-lg">
+                    <button
+                      onClick={handleDecrement}
+                      className="px-3 py-2 hover:bg-muted transition-colors"
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+                    <span className="px-4 font-semibold">
+                      {product.unitType === "weight" ? qty + " kg" : qty + " nos"}
+                    </span>
+                    <button
+                      onClick={handleIncrement}
+                      className="px-3 py-2 hover:bg-muted transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* Buttons */}
-              <div className="flex flex-col gap-3 mb-6">
+              {/* Add / Buy Buttons */}
+              {!isInCart && (
                 <Button
                   onClick={handleAddToCart}
-                  disabled={isAdding || isInCart}
-                  className={`w-full text-white text-lg py-6 ${
-                    isInCart
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-primary hover:bg-primary/90"
-                  }`}
+                  className="w-full text-white text-lg py-6 bg-primary hover:bg-primary/90"
                 >
-                  {isInCart
-                    ? "Already in Cart"
-                    : isAdding
-                    ? "Adding..."
-                    : "Add to Cart"}
+                  Add to Cart
                 </Button>
-
-                <Button
-                  onClick={handleBuyNow}
-                  variant="outline"
-                  className="w-full py-6 text-lg"
-                >
-                  Buy Now
-                </Button>
-              </div>
+              )}
+              <Button
+                onClick={handleBuyNow}
+                variant="outline"
+                className="w-full py-6 text-lg mt-3"
+              >
+                Buy Now
+              </Button>
 
               {/* Services */}
-              <div className="grid grid-cols-3 text-center border-t pt-4 gap-2 text-sm text-muted-foreground">
+              <div className="grid grid-cols-3 text-center border-t pt-4 gap-2 text-sm text-muted-foreground mt-4">
                 <div className="flex flex-col items-center">
                   <Truck className="w-5 h-5 mb-1 text-primary" />
                   <span>Free Shipping</span>

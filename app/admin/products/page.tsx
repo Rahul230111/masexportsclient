@@ -19,7 +19,8 @@ interface Product {
   quantity: number;
   category: string;
   image: string;
-  mainImage?: string; // ✅ add this field
+  mainImage?: string; 
+  unitType: "unit" | "weight";
 }
 
 export default function ProductsPage() {
@@ -130,9 +131,9 @@ export default function ProductsPage() {
                         </td>
                         <td className="px-6 py-4 text-sm text-muted-foreground">{product.category}</td>
                         <td className="px-6 py-4 text-sm font-semibold">₹{product.price}</td>
-                        <td 
-                          className="px-6 py-4 text-sm font-semibold">{product.quantity}
-                        </td>
+                        <td className="px-6 py-4 text-sm font-semibold">
+      {product.quantity} {product.unitType === "weight" ? "kg" : "nos"}
+    </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
                             <Link href={`/admin/products/${product._id}/edit`}>
