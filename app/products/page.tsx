@@ -1,5 +1,7 @@
+// app/products/page.tsx
 "use client";
 
+import { Suspense } from "react";
 import { ClientLayout } from "@/components/client/client-layout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -17,7 +19,7 @@ import axios from "axios";
 import { useCart } from "@/context/cart-context";
 import { useSearchParams } from "next/navigation";
 
-export default function ProductsPage() {
+function ProductsContent() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState("featured");
   const [products, setProducts] = useState<any[]>([]);
@@ -382,5 +384,24 @@ export default function ProductsPage() {
         </div>
       </div>
     </ClientLayout>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense
+      fallback={
+        <ClientLayout>
+          <div className="min-h-screen bg-background flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-4 text-muted-foreground">Loading products...</p>
+            </div>
+          </div>
+        </ClientLayout>
+      }
+    >
+      <ProductsContent />
+    </Suspense>
   );
 }
