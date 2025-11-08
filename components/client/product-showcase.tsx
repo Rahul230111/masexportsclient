@@ -37,7 +37,9 @@ export function ProductShowcase() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/product");
+        const res = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/product`
+        );
         setProducts(res.data);
 
         const initialQuantities: Record<string, number> = {};
@@ -49,6 +51,7 @@ export function ProductShowcase() {
         console.error("Failed to fetch products:", error);
       }
     };
+
     fetchProducts();
   }, []);
 
