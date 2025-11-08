@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import axios from "axios";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Truck, ShieldCheck, Headphones } from "lucide-react";
 import { ClientLayout } from "@/components/client/client-layout";
@@ -18,52 +17,22 @@ interface Product {
   unitType?: "unit" | "weight";
 }
 
-export default function ProductPage() {
-  const { id } = useParams();
+interface ProductDetailsProps {
+  product: Product;
+}
+
+export default function ProductDetails({ product }: ProductDetailsProps) {
   const router = useRouter();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [localQty, setLocalQty] = useState(0); // Track qty for local add
-
+  const [localQty, setLocalQty] = useState(0);
   const { items, addToCart, updateQuantity, removeFromCart } = useCart();
-
-  useEffect(() => {
-    if (!id) return;
-    const fetchProduct = async () => {
-      try {
-        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/product/${id}`);
-        setProduct(res.data);
-        // Set local quantity for products not yet in cart
-        const cartItem = items.find((item) => item.id === res.data._id);
-        setLocalQty(cartItem?.quantity ?? 0);
-      } catch (error) {
-        console.error("Error fetching product:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProduct();
-  }, [id, items]);
-
-  if (loading)
-    return <p className="text-center mt-10 text-gray-500">Loading product...</p>;
-  if (!product)
-    return (
-      <p className="text-center mt-10 text-red-500 font-medium">
-        Product not found.
-      </p>
-    );
 
   const cartItem = items.find((item) => item.id === product._id);
   const qty = cartItem?.quantity ?? localQty;
-
   const isInCart = qty > 0;
-
   const initialQty = product.unitType === "weight" ? 0.25 : 1;
   const step = product.unitType === "weight" ? 0.25 : 1;
 
   const handleAddToCart = () => {
-    if (!product) return;
     if (!isInCart) {
       addToCart(
         {
@@ -80,14 +49,12 @@ export default function ProductPage() {
   };
 
   const handleIncrement = () => {
-    if (!product) return;
     const newQty = qty + step;
     if (cartItem) updateQuantity(product._id, newQty);
     else setLocalQty(newQty);
   };
 
   const handleDecrement = () => {
-    if (!product) return;
     const newQty = qty - step;
     if (newQty <= 0) {
       if (cartItem) removeFromCart(product._id);
@@ -106,7 +73,11 @@ export default function ProductPage() {
   return (
     <ClientLayout>
       <div className="max-w-6xl mx-auto p-6">
-        <Button onClick={() => router.back()} variant="outline" className="mb-6">
+        <Button
+          onClick={() => router.back()}
+          variant="outline"
+          className="mb-6"
+        >
           ← Back
         </Button>
 
@@ -134,7 +105,8 @@ export default function ProductPage() {
                   Features
                 </h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  {product.features || "Premium quality and long-lasting performance."}
+                  {product.features ||
+                    "Premium quality and long-lasting performance."}
                 </p>
               </div>
             </div>
@@ -151,7 +123,9 @@ export default function ProductPage() {
               {/* Quantity Selector */}
               {isInCart && (
                 <div className="flex items-center gap-3 mb-6">
-                  <span className="font-medium text-sm text-muted-foreground">Quantity</span>
+                  <span className="font-medium text-sm text-muted-foreground">
+                    Quantity
+                  </span>
                   <div className="flex items-center border rounded-lg">
                     <button
                       onClick={handleDecrement}
@@ -160,7 +134,9 @@ export default function ProductPage() {
                       <Minus className="w-4 h-4" />
                     </button>
                     <span className="px-4 font-semibold">
-                      {product.unitType === "weight" ? qty + " kg" : qty + " nos"}
+                      {product.unitType === "weight"
+                        ? qty + " kg"
+                        : qty + " nos"}
                     </span>
                     <button
                       onClick={handleIncrement}
@@ -208,7 +184,8 @@ export default function ProductPage() {
 
             <div className="mt-6 text-sm text-muted-foreground leading-relaxed">
               <p>
-                <strong>Note:</strong> Images are for illustration purposes only.
+                <strong>Note:</strong> Images are for illustration purposes
+                only.
               </p>
               <p className="mt-3">
                 Estimated delivery: <strong>3–5 business days</strong>.
