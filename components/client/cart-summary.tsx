@@ -26,7 +26,8 @@ export function CartSummary() {
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const shipping =  0 // Always free
-  const tax = (subtotal - discount) * 0.1
+  // const tax = (subtotal - discount) * 0.1
+  const tax = 0;
   const total = subtotal - discount + shipping + tax
 
   const applyCoupon = () => {
@@ -83,10 +84,10 @@ export function CartSummary() {
             <span className="text-green-600 dark:text-green-400 font-medium">Free</span>
           </div>
 
-          <div className="flex justify-between text-sm">
+          {/* <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Tax (10%)</span>
             <span className="text-foreground font-medium">₹{tax.toLocaleString("en-IN")}</span>
-          </div>
+          </div> */}
         </div>
 
         <div className="flex justify-between text-lg">

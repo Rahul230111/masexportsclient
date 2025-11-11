@@ -6,6 +6,8 @@ import { CheckoutSummary } from "@/components/client/checkout-summary"
 import Link from "next/link"
 
 export default function CheckoutPage() {
+
+  
   return (
     <ClientLayout>
       <div className="min-h-screen bg-background">

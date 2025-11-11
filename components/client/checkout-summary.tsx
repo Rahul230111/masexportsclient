@@ -16,7 +16,7 @@ export function CheckoutSummary() {
   )
 
   const shipping = subtotal > 50 ? 0 : 10
-  const tax = subtotal * 0.1
+  const tax = 0
   const total = subtotal + shipping + tax
 
   return (
@@ -61,10 +61,10 @@ export function CheckoutSummary() {
                 </span>
               </div>
 
-              <div className="flex justify-between text-sm">
+              {/* <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Tax (10%)</span>
                 <span className="text-foreground font-medium">₹{tax.toFixed(2)}</span>
-              </div>
+              </div> */}
             </div>
 
             <div className="flex justify-between text-lg">
