@@ -1,27 +1,13 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useRouter } from "next/navigation"
 import { useCart } from "@/context/cart-context"
 
-
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
-
-export {};
-
-
 export function CheckoutForm() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
     // Shipping
     firstName: "",
@@ -42,22 +28,16 @@ export function CheckoutForm() {
     billingCity: "",
     billingState: "",
     billingZipCode: "",
-
-    // Payment
-    cardName: "",
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
   })
 
-    const [discount, setDiscount] = useState(0)
-    const { items } = useCart() 
-  
-    const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-    const shipping =  0 // Always free
-    const tax = (subtotal - discount) * 0.1
-    const total = subtotal - discount + shipping + tax
-  
+  const [discount, setDiscount] = useState(0)
+  const { items } = useCart()
+
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const shipping = 0
+  const tax = (subtotal - discount) * 0.1
+  const total = subtotal - discount + shipping + tax
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
     if (type === "checkbox") {
@@ -67,62 +47,52 @@ export function CheckoutForm() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
-  setIsLoading(true)
+  // Google Pay Redirect
+  const handleGooglePay = () => {
+    const upiId = "srinivasanmasexports@okaxis"
+    const name = "Mas Exports"
+    const note = "Order Payment"
+    const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${total.toFixed(
+      2
+    )}&cu=INR&tn=${encodeURIComponent(note)}`
 
-  try {
-    const response = await fetch("/api/razorpay/order", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount: total }), 
-    });
-
-    const data = await response.json();
-    if (!data.orderId) {
-      throw new Error("Unable to create Razorpay order");
-    }
-
-    const options = {
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-      amount: total,
-      currency: "INR",
-      name: "Mas Exports",
-      description: "Order Payment",
-      order_id: data.orderId,
-      handler: function (response :any) {
-        alert("Payment successful! Payment ID: " + response.razorpay_payment_id);
-        router.push("/order-success");
-      },
-      prefill: {
-        name: `${formData.firstName} ${formData.lastName}`,
-        email: formData.email,
-        contact: formData.phone,
-      },
-      notes: {
-        address: formData.address,
-      },
-      theme: { color: "#0d9488" },
-    };
-
-    // checkout
-    const rzp = new window.Razorpay(options);
-    rzp.open();
-
-  } catch (error) {
-    console.error("Razorpay Checkout Error:", error);
-    alert("Something went wrong. Please try again.");
-  } finally {
-    setIsLoading(false);
+    window.location.href = upiLink
   }
-};
+  console.log(items )
+
+const handleWhatsAppOrder = () => {
+  const phoneNumber = "9159478448"
+  const name = `${formData.firstName} ${formData.lastName}`
+  const amount = total.toFixed(2)
+
+  // Format cart items
+  const productDetails = items
+    .map(
+      (item, index) =>
+        `${index + 1}. ${item.name} — Qty: ${item.quantity} ${item.unitType} — ₹${item.price * item.quantity}`
+    )
+    .join("%0A")
+
+  // WhatsApp message content
+  const message = `Hello Mas Exports 👋,%0A%0AI would like to place an order.%0A%0A` +
+    `🧾 *Customer Details*%0A` +
+    `Name: ${encodeURIComponent(name)}%0A` +
+    `Email: ${encodeURIComponent(formData.email)}%0A` +
+    `Phone: ${encodeURIComponent(formData.phone)}%0A` +
+    `Address: ${encodeURIComponent(formData.address)}%0A%0A` +
+    `🛍️ *Order Details*%0A${productDetails}%0A%0A` +
+    `💰 *Total Amount:* ₹${amount}%0A%0A` +
+    `Please confirm my order.`
+
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`
+    window.location.href = whatsappUrl
+  }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form className="space-y-6">
       {/* Shipping Information */}
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-foreground mb-4">Shipping Information</h3>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">First Name</label>
@@ -178,7 +148,7 @@ export function CheckoutForm() {
         </div>
       </Card>
 
-      {/* Billing Information */}
+      {/* Billing Info */}
       <Card className="p-6">
         <div className="flex items-center gap-3 mb-4">
           <input
@@ -193,120 +163,23 @@ export function CheckoutForm() {
             Billing address same as shipping
           </label>
         </div>
-
-        {!formData.sameAsShipping && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">First Name</label>
-              <Input
-                type="text"
-                name="billingFirstName"
-                value={formData.billingFirstName}
-                onChange={handleInputChange}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Last Name</label>
-              <Input type="text" name="billingLastName" value={formData.billingLastName} onChange={handleInputChange} />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-foreground mb-2">Address</label>
-              <Input type="text" name="billingAddress" value={formData.billingAddress} onChange={handleInputChange} />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">City</label>
-              <Input type="text" name="billingCity" value={formData.billingCity} onChange={handleInputChange} />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">State</label>
-              <Input type="text" name="billingState" value={formData.billingState} onChange={handleInputChange} />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Zip Code</label>
-              <Input type="text" name="billingZipCode" value={formData.billingZipCode} onChange={handleInputChange} />
-            </div>
-          </div>
-        )}
       </Card>
 
-      {/* Payment Information */}
-      {/* <Card className="p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Payment Information</h3>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Cardholder Name</label>
-            <Input
-              type="text"
-              name="cardName"
-              value={formData.cardName}
-              onChange={handleInputChange}
-              placeholder="John Doe"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Card Number</label>
-            <Input
-              type="text"
-              name="cardNumber"
-              value={formData.cardNumber}
-              onChange={handleInputChange}
-              placeholder="1234 5678 9012 3456"
-              maxLength={19}
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Expiry Date</label>
-              <Input
-                type="text"
-                name="expiryDate"
-                value={formData.expiryDate}
-                onChange={handleInputChange}
-                placeholder="MM/YY"
-                maxLength={5}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">CVV</label>
-              <Input
-                type="text"
-                name="cvv"
-                value={formData.cvv}
-                onChange={handleInputChange}
-                placeholder="123"
-                maxLength={4}
-                required
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-4 p-3 bg-primary/5 border border-primary/20 rounded-lg">
-          <p className="text-xs text-muted-foreground">
-            Your payment information is secure and encrypted. We never store your full card details.
-          </p>
-        </div>
-      </Card> */}
-
-      {/* Submit Button */}
+      {/* Google Pay Button */}
       <Button
-        type="submit"
-        disabled={isLoading}
-        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-6 text-lg font-semibold"
+        type="button"
+        onClick={handleGooglePay}
+        className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold"
       >
-        {isLoading ? "Processing..." : "Complete Purchase"}
+        Pay on Google Pay
+      </Button>
+      <p style={{textAlign:"center"}}>or</p>
+       <Button
+        type="button"
+        onClick={handleWhatsAppOrder}
+        className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold"
+      >
+        Message and order on whatsapp
       </Button>
     </form>
   )

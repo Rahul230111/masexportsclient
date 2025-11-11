@@ -158,9 +158,9 @@ export function ProductShowcase() {
     return (
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <div className={`p-3 rounded-xl bg-gradient-to-r ${styles}`}>
+          {/* <div className={`p-3 rounded-xl bg-gradient-to-r ${styles}`}>
             <Building className="w-6 h-6 text-white" />
-          </div>
+          </div> */}
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-foreground bg-gradient-to-r bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
               {title}

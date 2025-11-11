@@ -26,12 +26,12 @@ export function ClientHeader() {
         <div className="flex items-center justify-between h-16">
           {/* 🔹 Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-110">
-              <Building className="w-4 h-4 text-white" />
+            <div className="w-[160px] h-8  rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-110">
+              <img src="/logo-mas.png" alt="" />
             </div>
-            <span className="font-bold text-lg text-foreground hidden sm:inline bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+            {/* <span className="font-bold text-lg text-foreground hidden sm:inline bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
               MasExports
-            </span>
+            </span> */}
           </Link>
 
           {/* 🔹 Desktop Navigation */}
