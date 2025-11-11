@@ -11,6 +11,7 @@ import { toast } from "react-hot-toast";
 import { ProtectedRoute } from "@/components/protected-route";
 import { AdminLayout } from "@/components/admin/admin-layout";
 import { AdminHeader } from "@/components/admin/admin-header";
+import JoditEditorComponent from "@/components/JoditEditorComponent";
 import { 
   Package, 
   DollarSign, 
@@ -373,14 +374,11 @@ export default function AddProductPage() {
                   </h2>
                   {descriptions.map((desc, i) => (
                     <div key={i} className="flex gap-2 items-start transition-all duration-200">
-                      <Textarea
-                        placeholder={`Description ${i + 1}`}
-                        value={desc}
-                        onChange={(e) =>
-                          handleArrayChange(i, e.target.value, setDescriptions)
-                        }
-                        className="flex-1 transition-all duration-200 focus:scale-105"
-                      />
+                      <JoditEditorComponent
+  value={desc}
+  onChange={(newValue) => handleArrayChange(i, newValue, setDescriptions)}
+  placeholder={`Description ${i + 1}`}
+/>
                       {descriptions.length > 1 && (
                         <Button
                           type="button"

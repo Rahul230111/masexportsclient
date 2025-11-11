@@ -7,6 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
+import JoditEditorComponent from "@/components/JoditEditorComponent";
+import { ProtectedRoute } from "@/components/protected-route";
+import { AdminLayout } from "@/components/admin/admin-layout";
+import { AdminHeader } from "@/components/admin/admin-header";
 
 export default function EditProductPage() {
   const { id } = useParams();
@@ -165,10 +169,13 @@ export default function EditProductPage() {
   if (loading) return <p className="text-center py-10">Loading product...</p>;
 
   return (
+    <ProtectedRoute requiredRole="admin">
+          <AdminLayout>
+            <AdminHeader title="Edit Product" />
     <div className="max-w-4xl mx-auto py-10">
       <Card>
         <CardContent className="space-y-8">
-          <h1 className="text-2xl font-semibold mb-4">Edit Product</h1>
+          
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Info */}
@@ -251,15 +258,10 @@ export default function EditProductPage() {
                 {product.category ? `${product.category} Details` : "Details"}
               </h2>
               {descriptions.map((desc, i) => (
-                <Input
-                  key={i}
-                  placeholder={`Description ${i + 1}`}
-                  value={desc}
-                  onChange={(e) =>
-                    handleArrayChange(i, e.target.value, setDescriptions)
-                  }
-                  className="mb-2"
-                />
+                <JoditEditorComponent
+    value={descriptions[0] || ""}
+    onChange={(newContent: string) => setDescriptions([newContent])}
+  />
               ))}
               <Button
                 type="button"
@@ -300,5 +302,8 @@ export default function EditProductPage() {
         </CardContent>
       </Card>
     </div>
+    </AdminLayout>
+    </ProtectedRoute>
+    
   );
 }

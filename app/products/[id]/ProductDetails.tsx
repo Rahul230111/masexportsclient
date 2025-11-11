@@ -11,7 +11,7 @@ interface Product {
   _id: string;
   name: string;
   price: number;
-  description?: string;
+  descriptions?: string;
   mainImage?: string;
   features?: string;
   unitType?: "unit" | "weight";
@@ -97,17 +97,27 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               <h2 className="text-xl font-semibold text-foreground border-b pb-2">
                 Description
               </h2>
-              <p className="text-muted-foreground leading-relaxed">
-                {product.description || "High-quality product for your needs."}
-              </p>
+              <div
+  className="prose prose-sm sm:prose lg:prose-lg text-muted-foreground leading-relaxed max-w-none"
+  dangerouslySetInnerHTML={{
+    __html:
+      Array.isArray(product.descriptions)
+        ? product.descriptions.join("<br/>")
+        : typeof product.descriptions === "string"
+        ? product.descriptions.replace(/\n/g, "<br/>")
+        : "<p>High-quality product for your needs.</p>",
+  }}
+/>
               <div className="mt-6">
                 <h2 className="text-xl font-semibold text-foreground border-b pb-2">
                   Features
                 </h2>
-                <p className="text-muted-foreground leading-relaxed">
-                  {product.features ||
-                    "Premium quality and long-lasting performance."}
-                </p>
+                <div
+  className="prose prose-sm sm:prose lg:prose-lg text-muted-foreground leading-relaxed max-w-none"
+  dangerouslySetInnerHTML={{
+    __html: product.features || "<p>High-quality product for your needs.</p>",
+  }}
+/>
               </div>
             </div>
           </div>
