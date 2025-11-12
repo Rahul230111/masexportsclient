@@ -250,36 +250,56 @@ export function ProductShowcase() {
                     className="flex-shrink-0 w-72 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer snap-start border-0 shadow-lg hover:scale-105"
                   >
                     <Link href={`/products/${product._id}`}>
-                      <div className="relative h-64 bg-muted overflow-hidden group/image">
-                        <img
-                          src={
-                            product.mainImage?.startsWith("http")
-                              ? product.mainImage
-                              : product.mainImage
-                              ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/${product.mainImage}`
-                              : "/placeholder.svg"
-                          }
-                          alt={product.name}
-                          className="w-full h-full object-cover group-hover/image:scale-110 transition-transform duration-500"
-                          onError={(e) =>
-                            (e.currentTarget.src = "/placeholder.svg")
-                          }
-                        />
-                        <button className="absolute top-3 right-3 bg-white/90 hover:bg-white p-2 rounded-full shadow-md transition-all duration-200 hover:scale-110">
-                          <Heart className="w-5 h-5 text-destructive" />
-                        </button>
-                        <div className="absolute bottom-3 left-3">
-                          {/* <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium border ${
-                              industry === "massexports"
-                                ? "bg-blue-100 text-blue-800 border-blue-200"
-                                : "bg-green-100 text-green-800 border-green-200"
-                            }`}
-                          >
-                            {product.unitType === "weight" ? "Weight" : "Unit"}
-                          </span> */}
-                        </div>
-                      </div>
+                      <div className="relative h-48 bg-muted overflow-hidden group">
+  {(() => {
+    const imageUrl = product.mainImage
+      ? product.mainImage.startsWith("http")
+        ? product.mainImage
+        : `${process.env.NEXT_PUBLIC_API_URL}/uploads/${product.mainImage}`
+      : null;
+
+    const videoUrl = product.video || null;
+
+    if (videoUrl) {
+      return (
+        <video
+          src={videoUrl}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+        />
+      );
+    }
+
+    return (
+      <img
+        src={imageUrl || "/placeholder.svg"}
+        alt={product.name}
+        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+        onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
+      />
+    );
+  })()}
+
+  <button className="absolute top-3 right-3 bg-white/90 hover:bg-white p-2 rounded-full shadow-md transition-all duration-200 hover:scale-110">
+    <Heart className="w-5 h-5 text-destructive" />
+  </button>
+
+  <div className="absolute top-3 left-3">
+   
+  </div>
+
+  {/* Optional: small 🎥 badge overlay for videos */}
+  {product.video && (
+    <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+      🎥 Video
+    </div>
+  )}
+</div>
+
                     </Link>
 
                     <div className="p-5 space-y-3">

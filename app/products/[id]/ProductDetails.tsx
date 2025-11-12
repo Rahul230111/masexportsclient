@@ -13,6 +13,7 @@ interface Product {
   price: number;
   descriptions?: string;
   mainImage?: string;
+  video?:string;
   features?: string;
   unitType?: "unit" | "weight";
 }
@@ -83,44 +84,79 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
         <div className="grid md:grid-cols-2 gap-10">
           {/* LEFT: Image & Description */}
-          <div>
-            {product.mainImage && (
-              <div className="border rounded-2xl overflow-hidden shadow-sm mb-6">
-                <img
-                  src={product.mainImage}
-                  alt={product.name}
-                  className="w-full h-[450px] object-cover"
-                />
-              </div>
-            )}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-foreground border-b pb-2">
-                Description
-              </h2>
-              <div
-  className="prose prose-sm sm:prose lg:prose-lg text-muted-foreground leading-relaxed max-w-none"
-  dangerouslySetInnerHTML={{
-    __html:
-      Array.isArray(product.descriptions)
-        ? product.descriptions.join("<br/>")
-        : typeof product.descriptions === "string"
-        ? product.descriptions.replace(/\n/g, "<br/>")
-        : "<p>High-quality product for your needs.</p>",
-  }}
-/>
-              <div className="mt-6">
-                <h2 className="text-xl font-semibold text-foreground border-b pb-2">
-                  Features
-                </h2>
-                <div
-  className="prose prose-sm sm:prose lg:prose-lg text-muted-foreground leading-relaxed max-w-none"
-  dangerouslySetInnerHTML={{
-    __html: product.features || "<p>High-quality product for your needs.</p>",
-  }}
-/>
-              </div>
-            </div>
-          </div>
+        {/* LEFT: Image & Description */}
+<div>
+  {/* Media (Image or Video) */}
+  {(product.mainImage || product.video) && (
+    <div className="border rounded-2xl overflow-hidden shadow-sm mb-6">
+      {product.video ? (
+        <video
+          src={
+            product.video.startsWith("http")
+              ? product.video
+              : `${process.env.NEXT_PUBLIC_API_URL}/uploads/${product.video}`
+          }
+          className="w-full h-[450px] object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          controls={false}
+          onError={(e) => {
+            console.warn("Video failed to load:", e);
+            const fallback = e.currentTarget
+              .closest("div")
+              ?.querySelector("img");
+            if (fallback) fallback.classList.remove("hidden");
+          }}
+        />
+      ) : (
+        <img
+          src={
+            product.mainImage?.startsWith("http")
+              ? product.mainImage
+              : `${process.env.NEXT_PUBLIC_API_URL}/uploads/${product.mainImage}`
+          }
+          alt={product.name}
+          className="w-full h-[450px] object-cover"
+          onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
+        />
+      )}
+    </div>
+  )}
+
+  {/* Description */}
+  <div className="space-y-4">
+    <h2 className="text-xl font-semibold text-foreground border-b pb-2">
+      Description
+    </h2>
+    <div
+      className="prose prose-sm sm:prose lg:prose-lg text-muted-foreground leading-relaxed max-w-none"
+      dangerouslySetInnerHTML={{
+        __html:
+          Array.isArray(product.descriptions)
+            ? product.descriptions.join("<br/>")
+            : typeof product.descriptions === "string"
+            ? product.descriptions.replace(/\n/g, "<br/>")
+            : "<p>High-quality product for your needs.</p>",
+      }}
+    />
+
+    <div className="mt-6">
+      <h2 className="text-xl font-semibold text-foreground border-b pb-2">
+        Features
+      </h2>
+      <div
+        className="prose prose-sm sm:prose lg:prose-lg text-muted-foreground leading-relaxed max-w-none"
+        dangerouslySetInnerHTML={{
+          __html: product.features || "<p>High-quality product for your needs.</p>",
+        }}
+      />
+    </div>
+  </div>
+</div>
+
 
           {/* RIGHT: Info & Actions */}
           <div className="flex flex-col justify-between">

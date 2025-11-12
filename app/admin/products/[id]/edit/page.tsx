@@ -7,26 +7,32 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import JoditEditorComponent from "@/components/JoditEditorComponent";
 import { ProtectedRoute } from "@/components/protected-route";
 import { AdminLayout } from "@/components/admin/admin-layout";
 import { AdminHeader } from "@/components/admin/admin-header";
+import { Image, Video, Package, DollarSign, Scale, Tag, ArrowLeft } from "lucide-react";
 
 export default function EditProductPage() {
   const { id } = useParams();
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [product, setProduct] = useState({
     name: "",
     price: "",
     quantity: "",
     category: "",
-    unitType: "unit", // default unit
+    unitType: "unit",
   });
 
   const [mainImage, setMainImage] = useState<File | null>(null);
   const [mainImageUrl, setMainImageUrl] = useState<string>("");
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string>("");
 
   const [descriptions, setDescriptions] = useState<string[]>([""]);
   const [features, setFeatures] = useState<string[]>([""]);
@@ -37,13 +43,7 @@ export default function EditProductPage() {
     "Coir & Fiber Products",
   ];
 
-  const categoryDescriptions: Record<string, string[]> = {
-    "Animal & Dairy Products": ["Milk Products", "Egg Products", "Meat Items"],
-    "Agricultural Products": ["Fruits", "Vegetables", "Grains"],
-    "Coir & Fiber Products": ["Coir Rope", "Coir Mat", "Coconut Fiber"],
-  };
-
-  // 🟢 Fetch existing product
+  // 🟢 Fetch product
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -60,11 +60,11 @@ export default function EditProductPage() {
         });
 
         setMainImageUrl(data.mainImage || "");
+        setVideoUrl(data.video || "");
         setDescriptions(data.descriptions?.length ? data.descriptions : [""]);
         setFeatures(data.features?.length ? data.features : [""]);
-      } catch (error: any) {
-        console.error(error);
-        toast.error(error.message || "Failed to load product");
+      } catch (err: any) {
+        toast.error(err.message || "Failed to load product");
       } finally {
         setLoading(false);
       }
@@ -77,11 +77,6 @@ export default function EditProductPage() {
   ) => {
     const { name, value } = e.target;
     setProduct((prev) => ({ ...prev, [name]: value }));
-
-    if (name === "category" && value) {
-      setDescriptions(categoryDescriptions[value] || [""]);
-      setFeatures([""]);
-    }
   };
 
   const handleArrayChange = (
@@ -100,21 +95,32 @@ export default function EditProductPage() {
     setter((prev) => [...prev, ""]);
   };
 
+  // ✅ Reusable FileButton
   const FileButton = ({
     label,
     file,
     onChange,
+    accept,
+    icon: Icon,
   }: {
     label: string;
     file: File | null;
     onChange: (file: File) => void;
+    accept: string;
+    icon: any;
   }) => {
     const inputRef = useRef<HTMLInputElement | null>(null);
     const handleClick = () => inputRef.current?.click();
 
     return (
       <div className="flex items-center gap-3">
-        <Button type="button" variant="outline" onClick={handleClick}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleClick}
+          className="flex items-center gap-2 hover:scale-105 transition-all"
+        >
+          <Icon className="w-4 h-4" />
           {label}
         </Button>
         <span className="text-sm text-gray-600">
@@ -123,7 +129,7 @@ export default function EditProductPage() {
         <input
           ref={inputRef}
           type="file"
-          accept="image/*"
+          accept={accept}
           className="hidden"
           onChange={(e) => {
             const selected = e.target.files?.[0];
@@ -136,16 +142,19 @@ export default function EditProductPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
     const formData = new FormData();
     formData.append("name", product.name);
     formData.append("price", product.price);
     formData.append("quantity", product.quantity);
     formData.append("category", product.category);
-    formData.append("unitType", product.unitType); // ✅ include unitType
+    formData.append("unitType", product.unitType);
     formData.append("descriptions", JSON.stringify(descriptions));
     formData.append("features", JSON.stringify(features));
+
     if (mainImage) formData.append("mainImage", mainImage);
+    if (videoFile) formData.append("video", videoFile);
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/product/${id}`, {
@@ -156,13 +165,15 @@ export default function EditProductPage() {
 
       if (res.ok) {
         toast.success("✅ Product updated successfully!");
-        setTimeout(() => router.push("/admin/products"), 1000);
+        router.push("/admin/products");
       } else {
         toast.error(`❌ Failed: ${data.message || "Unknown error"}`);
       }
     } catch (err) {
       console.error(err);
       toast.error("❌ Something went wrong.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -170,140 +181,152 @@ export default function EditProductPage() {
 
   return (
     <ProtectedRoute requiredRole="admin">
-          <AdminLayout>
-            <AdminHeader title="Edit Product" />
-    <div className="max-w-4xl mx-auto py-10">
-      <Card>
-        <CardContent className="space-y-8">
-          
+      <AdminLayout>
+        <AdminHeader title="Edit Product" />
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Basic Info */}
-            <div className="grid md:grid-cols-2 gap-4">
-              <Input
-                name="name"
-                placeholder="Product Name"
-                value={product.name}
-                onChange={handleInputChange}
-                required
-              />
-              <Input
-                name="price"
-                type="number"
-                placeholder="Price"
-                value={product.price}
-                onChange={handleInputChange}
-                required
-              />
-              <Input
-                name="quantity"
-                type="number"
-                placeholder="Quantity"
-                value={product.quantity}
-                onChange={handleInputChange}
-                required
-              />
-              <div>
-                <label className="block text-sm font-medium mb-1">Unit Type</label>
-                <select
-                  name="unitType"
-                  value={product.unitType}
-                  onChange={handleInputChange}
-                  className="w-full border border-gray-300 rounded-md p-2 text-sm"
-                  required
-                >
-                  <option value="unit">Unit</option>
-                  <option value="weight">Grams / Kg</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Category</label>
-                <select
-                  name="category"
-                  value={product.category}
-                  onChange={handleInputChange}
-                  className="w-full border border-gray-300 rounded-md p-2 text-sm"
-                  required
-                >
-                  <option value="">Select Category</option>
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Main Image */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Main Image</label>
-              {mainImageUrl && !mainImage && (
-                <img
-                  src={mainImageUrl}
-                  alt="Current"
-                  className="w-32 h-32 object-cover rounded mb-2 border"
-                />
-              )}
-              <FileButton
-                label="Choose New Main Image"
-                file={mainImage}
-                onChange={(file) => setMainImage(file)}
-              />
-            </div>
-
-            {/* Descriptions */}
-            <div>
-              <h2 className="font-semibold mb-2">
-                {product.category ? `${product.category} Details` : "Details"}
-              </h2>
-              {descriptions.map((desc, i) => (
-                <JoditEditorComponent
-    value={descriptions[0] || ""}
-    onChange={(newContent: string) => setDescriptions([newContent])}
-  />
-              ))}
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => addNewField(setDescriptions)}
-              >
-                + Add More Description
-              </Button>
-            </div>
-
-            {/* Features */}
-            <div>
-              <h2 className="font-semibold mb-2">Features</h2>
-              {features.map((feat, i) => (
-                <Textarea
-                  key={i}
-                  placeholder={`Feature ${i + 1}`}
-                  value={feat}
-                  onChange={(e) =>
-                    handleArrayChange(i, e.target.value, setFeatures)
-                  }
-                  className="mb-2"
-                />
-              ))}
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => addNewField(setFeatures)}
-              >
-                + Add More Feature
-              </Button>
-            </div>
-
-            <Button type="submit" className="w-full">
-              Update Product
+        <div className="max-w-4xl mx-auto py-10">
+          <div className="flex justify-end mb-6">
+            <Button
+              variant="outline"
+              onClick={() => router.push("/admin/products")}
+              className="flex items-center gap-2 hover:scale-105 transition-all"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Products
             </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
-    </AdminLayout>
+          </div>
+
+          <Card className="shadow-lg border-0 hover:shadow-xl transition-all duration-300">
+            <CardContent className="space-y-8 p-6">
+              {/* Basic Info */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <Label>Product Name</Label>
+                  <Input name="name" value={product.name} onChange={handleInputChange} required />
+                </div>
+                <div>
+                  <Label>Price</Label>
+                  <Input name="price" type="number" value={product.price} onChange={handleInputChange} required />
+                </div>
+                <div>
+                  <Label>{product.unitType === "unit" ? "Quantity" : "Weight"}</Label>
+                  <Input name="quantity" type="number" value={product.quantity} onChange={handleInputChange} required />
+                </div>
+                <div>
+                  <Label>Category</Label>
+                  <select
+                    name="category"
+                    value={product.category}
+                    onChange={handleInputChange}
+                    className="w-full border border-gray-300 rounded-md p-2 text-sm"
+                    required
+                  >
+                    <option value="">Select Category</option>
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label>Unit Type</Label>
+                  <select
+                    name="unitType"
+                    value={product.unitType}
+                    onChange={handleInputChange}
+                    className="w-full border border-gray-300 rounded-md p-2 text-sm"
+                    required
+                  >
+                    <option value="unit">Unit</option>
+                    <option value="weight">Weight (grams/kg)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Media */}
+             {/* Media */}
+<div className="space-y-4">
+  <h2 className="text-lg font-semibold flex items-center gap-2">
+    <Image className="w-5 h-5" /> Product Media
+  </h2>
+
+  {/* Preview of current media */}
+  {(() => {
+    const fileUrl = mainImage ? URL.createObjectURL(mainImage) : videoFile ? URL.createObjectURL(videoFile) : mainImageUrl || videoUrl;
+    if (!fileUrl) return null;
+
+    if (fileUrl.match(/\.(mp4|webm|ogg)$/i)) {
+      return <video src={fileUrl} controls className="w-48 h-32 rounded border" />;
+    } else {
+      return <img src={fileUrl} alt="Product Media" className="w-32 h-32 object-cover rounded border" />;
+    }
+  })()}
+
+  {/* Single choose file button */}
+  <FileButton
+    label="Choose Product Media"
+    file={mainImage || videoFile}
+    onChange={(file) => {
+      // reset both, then decide type
+      setMainImage(null);
+      setVideoFile(null);
+
+      if (file.type.startsWith("video/")) {
+        setVideoFile(file);
+      } else if (file.type.startsWith("image/")) {
+        setMainImage(file);
+      }
+    }}
+    accept="image/*,video/*"
+    icon={Video}
+  />
+</div>
+
+
+              {/* Descriptions */}
+              <div className="space-y-4">
+                <h2 className="text-lg font-semibold">Descriptions</h2>
+                {descriptions.map((desc, i) => (
+                  <JoditEditorComponent
+                    key={i}
+                    value={desc}
+                    onChange={(newValue) => handleArrayChange(i, newValue, setDescriptions)}
+                    placeholder={`Description ${i + 1}`}
+                  />
+                ))}
+                <Button type="button" variant="secondary" onClick={() => addNewField(setDescriptions)}>
+                  + Add More Description
+                </Button>
+              </div>
+
+              {/* Features */}
+              <div className="space-y-4">
+                <h2 className="text-lg font-semibold">Features</h2>
+                {features.map((feat, i) => (
+                  <Textarea
+                    key={i}
+                    placeholder={`Feature ${i + 1}`}
+                    value={feat}
+                    onChange={(e) => handleArrayChange(i, e.target.value, setFeatures)}
+                    className="transition-all duration-200 focus:scale-105"
+                  />
+                ))}
+                <Button type="button" variant="secondary" onClick={() => addNewField(setFeatures)}>
+                  + Add More Feature
+                </Button>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full py-3 text-lg font-semibold bg-gradient-to-r from-gray-900 to-gray-700 hover:from-gray-800 hover:to-gray-600 transition-all duration-300 hover:scale-105"
+                disabled={isSubmitting}
+                onClick={handleSubmit}
+              >
+                {isSubmitting ? "Updating Product..." : "Update Product"}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </AdminLayout>
     </ProtectedRoute>
-    
   );
 }
