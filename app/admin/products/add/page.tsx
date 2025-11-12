@@ -398,7 +398,7 @@ export default function AddProductPage() {
                     onClick={() => addNewField(setDescriptions)}
                     className="flex items-center gap-2 transition-all duration-200 hover:scale-105"
                   >
-                    + Add More Description
+                    + Add More Descriptions
                   </Button>
                 </div>
 
