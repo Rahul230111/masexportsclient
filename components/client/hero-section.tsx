@@ -88,7 +88,7 @@ export function HeroSection() {
   return (
     <section
       id="home"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      className="relative flex items-center justify-center overflow-hidden min-h-[40vh] sm:min-h-[85vh] md:min-h-screen"
     >
       {/* 🔹 Background Layer */}
       <div className="absolute inset-0">
@@ -163,18 +163,18 @@ export function HeroSection() {
       </div>
 
       {/* 🔹 Text Layer */}
-      <div className="relative z-10 container mx-auto px-4 text-center text-white">
-        <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-4">
+      <div className="relative z-10 container mx-auto px-3 sm:px-2 text-center text-white">
+        <h1 className="text-2xl md:text-6xl sm:text-xl font-bold leading-tight mb-4">
           {currentContent.title}
         </h1>
 
         {currentContent.subtitle && (
-          <h2 className="text-lg md:text-xl text-white/80 mb-3 tracking-wide">
+          <h2 className="text-sm md:text-xl text-white/80 mb-3 tracking-wide">
             {currentContent.subtitle}
           </h2>
         )}
 
-        <p className="text-lg mb-8 max-w-2xl mx-auto leading-relaxed text-white/90">
+        <p className="text-sm mb-8 max-w-2xl mx-auto leading-relaxed text-white/90">
           {currentContent.description}
         </p>
       </div>
