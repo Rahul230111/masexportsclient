@@ -14,11 +14,12 @@ export function CheckoutSummary() {
     (sum: number, item: CartItem) => sum + item.price * item.quantity,
     0
   )
-
+  
   const shipping = subtotal > 50 ? 0 : 10
   const tax = 0
   const total = subtotal + shipping + tax
 
+  console.log(total.toFixed(2))
   return (
          <div className="sticky top-24 space-y-4">
       {/* Order Items */}

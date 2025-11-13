@@ -36,7 +36,7 @@ export function CartItems() {
 
         return (
           <Card key={item.id} className="p-4 md:p-6">
-            <div className="flex gap-4 md:gap-6">
+            <div className="flex flex-col md:flex-row gap-4 md:gap-6">
               <Link href={`/products/${item.id}`} className="flex-shrink-0">
                 <img
                   src={item.image || "/placeholder.svg"}
@@ -53,7 +53,7 @@ export function CartItems() {
                   >
                     <h3 className="font-semibold text-lg">{item.name}</h3>
                   </Link>
-                  <p className="text-sm text-muted-foreground">SKU: PROD-{item.id}</p>
+                  <p className="text-sm text-muted-foreground">SKU - {item.id}</p>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -86,12 +86,26 @@ export function CartItems() {
                 </div>
               </div>
 
-              <button
-                onClick={() => removeFromCart(item.id)}
-                className="text-destructive hover:bg-destructive/10 p-2 rounded-lg"
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
+              <div className="
+                w-full md:w-auto 
+                flex md:block 
+                justify-center md:justify-end 
+                mt-3 md:mt-0
+              ">
+                <button
+                  onClick={() => removeFromCart(item.id)}
+                  className="
+                    text-destructive hover:bg-destructive/10
+                    p-2 rounded-lg
+                    w-full md:w-auto 
+                    flex items-center justify-center
+                    border md:border-0
+                    bg-black md:bg-white 
+                  "
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           </Card>
         )

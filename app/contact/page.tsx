@@ -23,15 +23,22 @@ export default function ContactPage() {
   }
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Here you would send the form data to your backend
-    console.log("Form submitted:", formData)
-    setSubmitted(true)
-    setTimeout(() => {
-      setFormData({ name: "", email: "", subject: "", message: "" })
-      setSubmitted(false)
-    }, 3000)
-  }
+  e.preventDefault()
+
+  const message = `Name: ${formData.name}
+      Email: ${formData.email}
+      Subject: ${formData.subject}
+      Message: ${formData.message}`
+
+        const encodedMessage = encodeURIComponent(message)
+
+        // WhatsApp redirect
+        const whatsappUrl = `https://wa.me/919159478448?text=${encodedMessage}`
+        window.open(whatsappUrl, "_blank")
+
+        // Reset form
+        setFormData({ name: "", email: "", subject: "", message: "" })
+      }
 
   return (
     <ClientLayout>
