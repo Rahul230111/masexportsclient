@@ -9,6 +9,10 @@ export interface CartItem {
   name: string;
   price: number;
   image?: string;
+  videoUrl?: string;
+  video?: string;
+  media?: string;
+  file?: string;
   quantity: number;
   unitType?: "unit" | "weight";
 }

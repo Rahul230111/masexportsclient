@@ -38,6 +38,7 @@ export default function AddProductPage() {
   const [descriptions, setDescriptions] = useState<string[]>([""]);
   const [features, setFeatures] = useState<string[]>([""]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
 
   const categories = [
     "Animal & Dairy Products",
@@ -89,18 +90,20 @@ export default function AddProductPage() {
     setter((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // File input component
   const FileButton = ({
-    label,
-    file,
-    onChange,
-  }: {
-    label: string;
-    file: File | null;
-    onChange: (file: File) => void;
-  }) => {
-    const inputRef = useRef<HTMLInputElement | null>(null);
-    const handleClick = () => inputRef.current?.click();
+  label,
+  file,
+  onChange,
+  accept,
+}: {
+  label: string;
+  file: File | null;
+  onChange: (file: File) => void;
+  accept: string;
+}) => {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const handleClick = () => inputRef.current?.click();
+
 
     return (
       <div className="flex items-center gap-3">
@@ -144,6 +147,7 @@ export default function AddProductPage() {
     formData.append("industry", product.industry);
 
     if (mainImage) formData.append("mainImage", mainImage);
+    if (videoFile) formData.append("video", videoFile);
     formData.append("descriptions", JSON.stringify(descriptions.filter(desc => desc.trim() !== "")));
     formData.append("features", JSON.stringify(features.filter(feat => feat.trim() !== "")));
 
@@ -354,17 +358,46 @@ export default function AddProductPage() {
                 </div>
 
                 {/* Image Upload */}
-                <div className="space-y-4">
-                  <h2 className="text-lg font-semibold flex items-center gap-2">
-                    <Image className="w-5 h-5" />
-                    Product Image
-                  </h2>
-                  <FileButton
-                    label="Choose Product Image"
-                    file={mainImage}
-                    onChange={(file) => setMainImage(file)}
-                  />
-                </div>
+               {/* Media Upload (Image/Video) */}
+{/* Media Upload (Image or Video) */}
+<div className="space-y-4">
+  <h2 className="text-lg font-semibold flex items-center gap-2">
+    <Image className="w-5 h-5" />
+    Product Media
+  </h2>
+
+  {/* Preview Section */}
+  {(() => {
+    const file = mainImage || videoFile;
+    if (!file) return null;
+
+    const url = URL.createObjectURL(file);
+    if (file.type.startsWith("video/")) {
+      return <video src={url} controls className="w-48 h-32 rounded border" />;
+    } else {
+      return <img src={url} alt="Preview" className="w-32 h-32 object-cover rounded border" />;
+    }
+  })()}
+
+  {/* Single file upload button */}
+  <FileButton
+    label="Choose Product Media"
+    file={mainImage || videoFile}
+    onChange={(file) => {
+      setMainImage(null);
+      setVideoFile(null);
+
+      if (file.type.startsWith("video/")) {
+        setVideoFile(file);
+      } else {
+        setMainImage(file);
+      }
+    }}
+    accept="image/*,video/*"
+  />
+</div>
+
+
 
                 {/* Descriptions */}
                 <div className="space-y-4">

@@ -36,6 +36,7 @@ interface Product {
   industry: string;
   image: string;
   mainImage?: string;
+  video?:string;
   unitType: "unit" | "weight";
 }
 
@@ -390,17 +391,47 @@ export default function ProductsPage() {
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-4">
                               <div className="relative">
-                                <img
-                                  src={
-                                    product.mainImage?.startsWith("http")
-                                      ? product.mainImage
-                                      : product.mainImage
-                                      ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/${product.mainImage}`
-                                      : "/placeholder.svg"
-                                  }
-                                  alt={product.name}
-                                  className="w-16 h-16 object-cover rounded-lg transition-all duration-200 group-hover:scale-105"
-                                />
+                               {/* Product Media (Image or Video) */}
+<div className="relative w-16 h-16 rounded-lg overflow-hidden">
+  {product.video ? (
+    <video
+      src={
+        product.video.startsWith("http")
+          ? product.video
+          : `${process.env.NEXT_PUBLIC_API_URL}/uploads/${product.video}`
+      }
+      className="w-full h-full object-cover"
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="auto"
+      controls={false}
+      onError={(e) => {
+        console.warn("Video load error:", e);
+        const fallback = e.currentTarget
+          .closest("div")
+          ?.querySelector("img");
+        if (fallback) fallback.classList.remove("hidden");
+      }}
+    />
+  ) : (
+    <img
+      src={
+        product.mainImage?.startsWith("http")
+          ? product.mainImage
+          : product.mainImage
+          ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/${product.mainImage}`
+          : "/placeholder.svg"
+      }
+      alt={product.name}
+      className="w-full h-full object-cover"
+      onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
+    />
+  )}
+  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200" />
+</div>
+
                                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-lg transition-colors duration-200" />
                               </div>
                               <div className="flex flex-col">
