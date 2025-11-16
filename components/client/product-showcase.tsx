@@ -190,6 +190,57 @@ export function ProductShowcase() {
   // Product row
   const ProductRow = ({ industry, products }: { industry: "massexports" | "dhanalakshmi"; products: any[]; }) => {
     const { canScrollLeft, canScrollRight } = scrollStates[industry];
+const MiniCarousel = ({ media }: { media: any[] }) => {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (!media || media.length === 0) return;
+
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % media.length);
+    }, 3000);
+
+    return () => clearInterval(timer);
+  }, [media]);
+
+  if (!media || media.length === 0) {
+    return (
+      <img
+        src="/placeholder.svg"
+        className="w-full h-full object-cover"
+        alt="placeholder"
+      />
+    );
+  }
+
+  const item = media[index];
+  const url = item?.url?.startsWith("http")
+    ? item.url
+    : `${process.env.NEXT_PUBLIC_API_URL}/uploads/${item?.url || ""}`;
+
+  return (
+    <div className="relative h-full w-full flex items-center justify-center overflow-hidden">
+      {item.type === "image" && (
+        <img
+          src={url}
+          className="w-full h-full object-cover transition-all duration-500"
+          alt="media"
+        />
+      )}
+
+      {item.type === "video" && (
+        <video
+          src={url}
+          className="w-full h-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+        />
+      )}
+    </div>
+  );
+};
 
     return (
       <div className="mb-12">
@@ -251,38 +302,7 @@ export function ProductShowcase() {
                   <Card key={product._id} className="flex-shrink-0 w-72 min-w-[18rem]">
                     <Link href={`/products/${product._id}`}>
                       <div className="relative h-44 bg-muted overflow-hidden">
-                        {(() => {
-                          const imageUrl = product.mainImage
-                            ? product.mainImage.startsWith("http")
-                              ? product.mainImage
-                              : `${process.env.NEXT_PUBLIC_API_URL}/uploads/${product.mainImage}`
-                            : null;
-                          const videoUrl = product.video || null;
-                          if (videoUrl) {
-                            return (
-                              <video
-                                src={videoUrl}
-                                className="w-full h-full object-cover"
-                                autoPlay
-                                muted
-                                loop
-                                playsInline
-                                preload="auto"
-                                // prevent dragging behavior
-                                draggable={false}
-                              />
-                            );
-                          }
-                          return (
-                            <img
-                              src={imageUrl || "/placeholder.svg"}
-                              alt={product.name}
-                              className="w-full h-full object-cover"
-                              onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
-                              draggable={false}
-                            />
-                          );
-                        })()}
+                       <MiniCarousel media={product.media || []} />
                         <button className="absolute top-3 right-3 bg-white/90 p-2 rounded-full shadow">
                           <Heart className="w-4 h-4 text-destructive" />
                         </button>

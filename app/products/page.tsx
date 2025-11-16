@@ -176,6 +176,59 @@ function ProductsContent() {
     return "Explore our complete collection from all industries";
   };
 
+  const MiniCarousel = ({ media }: { media: any[] }) => {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (!media || media.length === 0) return;
+
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % media.length);
+    }, 3000);
+
+    return () => clearInterval(timer);
+  }, [media]);
+
+  if (!media || media.length === 0) {
+    return (
+      <img
+        src="/placeholder.svg"
+        className="w-full h-full object-cover"
+        alt="placeholder"
+      />
+    );
+  }
+
+  const item = media[index];
+  const url = (item?.url || "").startsWith("http")
+    ? item.url
+    : `${process.env.NEXT_PUBLIC_API_URL}/uploads/${item?.url || ""}`;
+
+  return (
+    <div className="relative h-full w-full flex items-center justify-center bg-black/5 overflow-hidden">
+      {item.type === "image" && (
+        <img
+          src={url}
+          alt="media"
+          className="w-full h-full object-cover transition-all duration-500"
+          onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
+        />
+      )}
+
+      {item.type === "video" && (
+        <video
+          src={url}
+          className="w-full h-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+        />
+      )}
+    </div>
+  );
+};
+
   return (
     <ClientLayout>
       <div className="min-h-screen bg-background">
@@ -276,39 +329,8 @@ function ProductsContent() {
                       className="overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer h-full flex flex-col border-0 shadow-lg hover:scale-105"
                     >
                       <Link href={`/products/${product._id}`}>
-                        <div className="relative h-48 bg-muted overflow-hidden group">
-  {(() => {
-    const imageUrl = product.mainImage
-      ? product.mainImage.startsWith("http")
-        ? product.mainImage
-        : `${process.env.NEXT_PUBLIC_API_URL}/uploads/${product.mainImage}`
-      : null;
-
-    const videoUrl = product.video || null;
-
-    if (videoUrl) {
-      return (
-        <video
-          src={videoUrl}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-        />
-      );
-    }
-
-    return (
-      <img
-        src={imageUrl || "/placeholder.svg"}
-        alt={product.name}
-        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-        onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
-      />
-    );
-  })()}
+                      <div className="relative h-48 bg-muted overflow-hidden group">
+  <MiniCarousel media={product.media || []} />
 
   <button className="absolute top-3 right-3 bg-white/90 hover:bg-white p-2 rounded-full shadow-md transition-all duration-200 hover:scale-110">
     <Heart className="w-5 h-5 text-destructive" />
@@ -317,14 +339,9 @@ function ProductsContent() {
   <div className="absolute top-3 left-3">
     <IndustryBadge industry={product.industry} />
   </div>
-
-  {/* Optional: small 🎥 badge overlay for videos */}
-  {product.video && (
-    <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-      🎥 Video
-    </div>
-  )}
 </div>
+
+
 
                       </Link>
 
