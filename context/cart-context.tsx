@@ -8,13 +8,17 @@ export interface CartItem {
   id: string;
   name: string;
   price: number;
-  image?: string;
+ 
   videoUrl?: string;
   video?: string;
   media?: string;
   file?: string;
   quantity: number;
   unitType?: "unit" | "weight";
+   image?: string | null;      // first media.url
+  mediaType?: "image" | "video"; // first media.type
+
+   // weight / unit (already in your code)
 }
 
 interface CartContextType {

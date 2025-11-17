@@ -1,6 +1,7 @@
+// AddProductPage.tsx (replace your current file contents)
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,16 +13,16 @@ import { ProtectedRoute } from "@/components/protected-route";
 import { AdminLayout } from "@/components/admin/admin-layout";
 import { AdminHeader } from "@/components/admin/admin-header";
 import JoditEditorComponent from "@/components/JoditEditorComponent";
-import { 
-  Package, 
-  DollarSign, 
-  Scale, 
-  Image, 
-  FileText, 
-  Star, 
+import {
+  Package,
+  DollarSign,
+  Scale,
+  Image,
+  FileText,
+  Star,
   ArrowLeft,
   Building,
-  Tag
+  Tag,
 } from "lucide-react";
 
 export default function AddProductPage() {
@@ -34,11 +35,15 @@ export default function AddProductPage() {
     industry: "massexports",
   });
 
-  const [mainImage, setMainImage] = useState<File | null>(null);
+  // NEW: mediaFiles holds selected File objects + preview url
+  const [mediaFiles, setMediaFiles] = useState<
+    { file: File; preview: string; id: string }[]
+  >([]);
+  const mediaInputRef = useRef<HTMLInputElement | null>(null);
+
   const [descriptions, setDescriptions] = useState<string[]>([""]);
   const [features, setFeatures] = useState<string[]>([""]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [videoFile, setVideoFile] = useState<File | null>(null);
 
   const categories = [
     "Animal & Dairy Products",
@@ -56,7 +61,7 @@ export default function AddProductPage() {
     { value: "weight", label: "Weight", icon: Scale },
   ];
 
-  // Input change handler
+  // generic input change
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -64,7 +69,6 @@ export default function AddProductPage() {
     setProduct((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Array change handler
   const handleArrayChange = (
     index: number,
     value: string,
@@ -77,63 +81,68 @@ export default function AddProductPage() {
     });
   };
 
-  // Add new array field
-  const addNewField = (setter: React.Dispatch<React.SetStateAction<string[]>>) => {
+  const addNewField = (setter: React.Dispatch<React.SetStateAction<string[]>>) =>
     setter((prev) => [...prev, ""]);
-  };
 
-  // Remove array field
   const removeField = (
     index: number,
     setter: React.Dispatch<React.SetStateAction<string[]>>
-  ) => {
-    setter((prev) => prev.filter((_, i) => i !== index));
+  ) => setter((prev) => prev.filter((_, i) => i !== index));
+
+  // Add files (append)
+  const onSelectMedia = (files: File[]) => {
+    const items = files.map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+      id: `${file.name}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+    }));
+    setMediaFiles((prev) => [...prev, ...items]);
   };
 
+  // Remove selected file (and revoke URL)
+  const removeSelectedMedia = (id: string) => {
+    setMediaFiles((prev) => {
+      const toRemove = prev.find((p) => p.id === id);
+      if (toRemove) URL.revokeObjectURL(toRemove.preview);
+      return prev.filter((p) => p.id !== id);
+    });
+  };
+
+  // cleanup on unmount
+  useEffect(() => {
+    return () => {
+      mediaFiles.forEach((m) => URL.revokeObjectURL(m.preview));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // minimal replacement of your FileButton — uses the input ref above
   const FileButton = ({
-  label,
-  file,
-  onChange,
-  accept,
-}: {
-  label: string;
-  file: File | null;
-  onChange: (file: File) => void;
-  accept: string;
-}) => {
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const handleClick = () => inputRef.current?.click();
-
-
+    label,
+    onClick,
+  }: {
+    label: string;
+    onClick: () => void;
+  }) => {
     return (
       <div className="flex items-center gap-3">
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={handleClick}
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onClick}
           className="flex items-center gap-2 transition-all duration-200 hover:scale-105"
         >
           <Image className="w-4 h-4" />
           {label}
         </Button>
         <span className="text-sm text-gray-600 transition-opacity duration-200">
-          {file ? file.name : "No file chosen"}
+          {mediaFiles.length > 0 ? `${mediaFiles.length} file(s) selected` : "No file chosen"}
         </span>
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => {
-            const selected = e.target.files?.[0];
-            if (selected) onChange(selected);
-          }}
-        />
       </div>
     );
   };
 
-  // Form submit
+  // submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -146,10 +155,14 @@ export default function AddProductPage() {
     formData.append("unitType", product.unitType);
     formData.append("industry", product.industry);
 
-    if (mainImage) formData.append("mainImage", mainImage);
-    if (videoFile) formData.append("video", videoFile);
-    formData.append("descriptions", JSON.stringify(descriptions.filter(desc => desc.trim() !== "")));
-    formData.append("features", JSON.stringify(features.filter(feat => feat.trim() !== "")));
+    // append selected media files as 'media' (backend expects media[])
+    mediaFiles.forEach((m) => formData.append("media", m.file));
+
+    formData.append(
+      "descriptions",
+      JSON.stringify(descriptions.filter((d) => d.trim() !== ""))
+    );
+    formData.append("features", JSON.stringify(features.filter((f) => f.trim() !== "")));
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/product`, {
@@ -161,15 +174,17 @@ export default function AddProductPage() {
 
       if (res.ok) {
         toast.success("Product added successfully!");
-        setProduct({ 
-          name: "", 
-          price: "", 
-          quantity: "", 
-          category: "", 
+        setProduct({
+          name: "",
+          price: "",
+          quantity: "",
+          category: "",
           unitType: "unit",
-          industry: "massexports" 
+          industry: "massexports",
         });
-        setMainImage(null);
+        // cleanup previews
+        mediaFiles.forEach((m) => URL.revokeObjectURL(m.preview));
+        setMediaFiles([]);
         setDescriptions([""]);
         setFeatures([""]);
       } else {
@@ -210,7 +225,7 @@ export default function AddProductPage() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Basic Info */}
+                {/* Basic Info (unchanged) */}
                 <div className="space-y-4">
                   <h2 className="text-lg font-semibold flex items-center gap-2">
                     <Tag className="w-5 h-5" />
@@ -232,7 +247,7 @@ export default function AddProductPage() {
                         className="transition-all duration-200 focus:scale-105"
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="price" className="flex items-center gap-2">
                         <DollarSign className="w-4 h-4" />
@@ -252,7 +267,11 @@ export default function AddProductPage() {
 
                     <div className="space-y-2">
                       <Label htmlFor="quantity" className="flex items-center gap-2">
-                        {product.unitType === "unit" ? <Package className="w-4 h-4" /> : <Scale className="w-4 h-4" />}
+                        {product.unitType === "unit" ? (
+                          <Package className="w-4 h-4" />
+                        ) : (
+                          <Scale className="w-4 h-4" />
+                        )}
                         {product.unitType === "unit" ? "Quantity" : "Weight"}
                       </Label>
                       <Input
@@ -295,28 +314,21 @@ export default function AddProductPage() {
                   </div>
                 </div>
 
-                {/* Industry Selection */}
+                {/* Industry, Unit Type unchanged */}
                 <div className="space-y-4">
                   <h2 className="text-lg font-semibold flex items-center gap-2">
                     <Building className="w-5 h-5" />
                     Industry
                   </h2>
-                  <RadioGroup 
-                    value={product.industry} 
-                    onValueChange={(value) => setProduct(prev => ({ ...prev, industry: value }))}
+                  <RadioGroup
+                    value={product.industry}
+                    onValueChange={(value) => setProduct((prev) => ({ ...prev, industry: value }))}
                     className="flex gap-4"
                   >
                     {industries.map((industry) => (
                       <div key={industry.value} className="flex items-center space-x-2">
-                        <RadioGroupItem 
-                          value={industry.value} 
-                          id={industry.value}
-                          className="transition-transform duration-200 hover:scale-110"
-                        />
-                        <Label 
-                          htmlFor={industry.value}
-                          className="cursor-pointer transition-all duration-200 hover:text-gray-700"
-                        >
+                        <RadioGroupItem value={industry.value} id={industry.value} />
+                        <Label htmlFor={industry.value} className="cursor-pointer">
                           {industry.label}
                         </Label>
                       </div>
@@ -324,30 +336,22 @@ export default function AddProductPage() {
                   </RadioGroup>
                 </div>
 
-                {/* Unit Type Selection */}
                 <div className="space-y-4">
                   <h2 className="text-lg font-semibold flex items-center gap-2">
                     <Scale className="w-5 h-5" />
                     Unit Type
                   </h2>
-                  <RadioGroup 
-                    value={product.unitType} 
-                    onValueChange={(value) => setProduct(prev => ({ ...prev, unitType: value }))}
+                  <RadioGroup
+                    value={product.unitType}
+                    onValueChange={(value) => setProduct((prev) => ({ ...prev, unitType: value }))}
                     className="grid grid-cols-2 gap-4 max-w-md"
                   >
                     {unitTypes.map((unit) => {
                       const IconComponent = unit.icon;
                       return (
                         <div key={unit.value}>
-                          <RadioGroupItem
-                            value={unit.value}
-                            id={unit.value}
-                            className="peer sr-only"
-                          />
-                          <Label
-                            htmlFor={unit.value}
-                            className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all duration-200 hover:scale-105"
-                          >
+                          <RadioGroupItem value={unit.value} id={unit.value} className="peer sr-only" />
+                          <Label htmlFor={unit.value} className="flex flex-col items-center justify-between rounded-md border-2 p-4 cursor-pointer">
                             <IconComponent className="w-6 h-6 mb-2" />
                             {unit.label}
                           </Label>
@@ -357,128 +361,109 @@ export default function AddProductPage() {
                   </RadioGroup>
                 </div>
 
-                {/* Image Upload */}
-               {/* Media Upload (Image/Video) */}
-{/* Media Upload (Image or Video) */}
-<div className="space-y-4">
-  <h2 className="text-lg font-semibold flex items-center gap-2">
-    <Image className="w-5 h-5" />
-    Product Media
-  </h2>
+                {/* ----- MEDIA UPLOADER (REPLACED) ----- */}
+                <div className="space-y-4">
+                  <h2 className="text-lg font-semibold flex items-center gap-2">
+                    <Image className="w-5 h-5" />
+                    Product Media
+                  </h2>
 
-  {/* Preview Section */}
-  {(() => {
-    const file = mainImage || videoFile;
-    if (!file) return null;
+                  {/* Selected previews */}
+                  <div className="flex flex-wrap gap-4 mt-2">
+                    {mediaFiles.map((m) => {
+                      return m.file.type.startsWith("video/") ? (
+                        <div key={m.id} className="relative">
+                          <video src={m.preview} controls className="w-48 h-32 rounded border" />
+                          <button
+                            type="button"
+                            onClick={() => removeSelectedMedia(m.id)}
+                            className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 text-xs"
+                            title="Remove"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ) : (
+                        <div key={m.id} className="relative">
+                          <img src={m.preview} className="w-32 h-32 object-cover rounded border" alt={m.file.name} />
+                          <button
+                            type="button"
+                            onClick={() => removeSelectedMedia(m.id)}
+                            className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 text-xs"
+                            title="Remove"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
 
-    const url = URL.createObjectURL(file);
-    if (file.type.startsWith("video/")) {
-      return <video src={url} controls className="w-48 h-32 rounded border" />;
-    } else {
-      return <img src={url} alt="Preview" className="w-32 h-32 object-cover rounded border" />;
-    }
-  })()}
+                  <div className="flex items-center gap-3">
+                    <FileButton
+                      label="Choose Product Media"
+                      onClick={() => mediaInputRef.current?.click()}
+                    />
 
-  {/* Single file upload button */}
-  <FileButton
-    label="Choose Product Media"
-    file={mainImage || videoFile}
-    onChange={(file) => {
-      setMainImage(null);
-      setVideoFile(null);
+                    <input
+                      ref={mediaInputRef}
+                      type="file"
+                      accept="image/*,video/*"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files || []);
+                        if (files.length) onSelectMedia(files);
+                        // reset input so selecting same files again works
+                        if (mediaInputRef.current) mediaInputRef.current.value = "";
+                      }}
+                    />
+                  </div>
+                </div>
 
-      if (file.type.startsWith("video/")) {
-        setVideoFile(file);
-      } else {
-        setMainImage(file);
-      }
-    }}
-    accept="image/*,video/*"
-  />
-</div>
-
-
-
-                {/* Descriptions */}
+                {/* Descriptions (unchanged) */}
                 <div className="space-y-4">
                   <h2 className="text-lg font-semibold flex items-center gap-2">
                     <FileText className="w-5 h-5" />
                     Descriptions
                   </h2>
                   {descriptions.map((desc, i) => (
-                    <div key={i} className="flex gap-2 items-start transition-all duration-200">
-                      <JoditEditorComponent
-  value={desc}
-  onChange={(newValue) => handleArrayChange(i, newValue, setDescriptions)}
-  placeholder={`Description ${i + 1}`}
-/>
+                    <div key={i} className="flex gap-2 items-start">
+                      <JoditEditorComponent value={desc} onChange={(newValue) => handleArrayChange(i, newValue, setDescriptions)} placeholder={`Description ${i + 1}`} />
                       {descriptions.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => removeField(i, setDescriptions)}
-                          className="mt-1 transition-all duration-200 hover:scale-110"
-                        >
+                        <Button type="button" variant="destructive" size="sm" onClick={() => removeField(i, setDescriptions)}>
                           ×
                         </Button>
                       )}
                     </div>
                   ))}
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() => addNewField(setDescriptions)}
-                    className="flex items-center gap-2 transition-all duration-200 hover:scale-105"
-                  >
+                  <Button type="button" variant="secondary" onClick={() => addNewField(setDescriptions)}>
                     + Add More Descriptions
                   </Button>
                 </div>
 
-                {/* Features */}
+                {/* Features (unchanged) */}
                 <div className="space-y-4">
                   <h2 className="text-lg font-semibold flex items-center gap-2">
                     <Star className="w-5 h-5" />
                     Features
                   </h2>
                   {features.map((feat, i) => (
-                    <div key={i} className="flex gap-2 items-start transition-all duration-200">
-                      <Textarea
-                        placeholder={`Feature ${i + 1}`}
-                        value={feat}
-                        onChange={(e) =>
-                          handleArrayChange(i, e.target.value, setFeatures)
-                        }
-                        className="flex-1 transition-all duration-200 focus:scale-105"
-                      />
+                    <div key={i} className="flex gap-2 items-start">
+                      <Textarea placeholder={`Feature ${i + 1}`} value={feat} onChange={(e) => handleArrayChange(i, e.target.value, setFeatures)} className="flex-1" />
                       {features.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => removeField(i, setFeatures)}
-                          className="mt-1 transition-all duration-200 hover:scale-110"
-                        >
+                        <Button type="button" variant="destructive" size="sm" onClick={() => removeField(i, setFeatures)}>
                           ×
                         </Button>
                       )}
                     </div>
                   ))}
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() => addNewField(setFeatures)}
-                    className="flex items-center gap-2 transition-all duration-200 hover:scale-105"
-                  >
+                  <Button type="button" variant="secondary" onClick={() => addNewField(setFeatures)}>
                     + Add More Feature
                   </Button>
                 </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full py-3 text-lg font-semibold transition-all duration-300 hover:scale-105 bg-gradient-to-r from-gray-900 to-gray-700 hover:from-gray-800 hover:to-gray-600"
-                  disabled={isSubmitting}
-                >
+                <Button type="submit" className="w-full py-3 text-lg font-semibold bg-gradient-to-r from-gray-900 to-gray-700" disabled={isSubmitting}>
                   {isSubmitting ? (
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

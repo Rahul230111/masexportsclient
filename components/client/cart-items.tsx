@@ -23,7 +23,7 @@ export function CartItems() {
         const handleDecrement = () => {
           const newQty = formatQuantity(item.quantity - step)
           if (newQty <= 0) {
-            removeFromCart(item.id) // 👈 remove item completely
+            removeFromCart(item.id)
           } else {
             updateQuantity(item.id, newQty)
           }
@@ -34,17 +34,36 @@ export function CartItems() {
           updateQuantity(item.id, newQty)
         }
 
+        // 🟢 ALWAYS SAFE — prevents null/undefined errors
+        const mediaUrl = item.image || "/placeholder.svg"
+        const isVideo = item.mediaType === "video"
+
         return (
           <Card key={item.id} className="p-4 md:p-6">
             <div className="flex flex-col md:flex-row gap-4 md:gap-6">
+
+              {/* ---------- MEDIA DISPLAY ---------- */}
               <Link href={`/products/${item.id}`} className="flex-shrink-0">
-                <img
-                  src={item.image || "/placeholder.svg"}
-                  alt={item.name}
-                  className="w-24 h-24 md:w-32 md:h-32 object-cover rounded-lg hover:opacity-80 transition-opacity"
-                />
+                {isVideo ? (
+                  <video
+                    src={mediaUrl}
+                    className="w-24 h-24 md:w-32 md:h-32 object-cover rounded-lg"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                  />
+                ) : (
+                  <img
+                    src={mediaUrl}
+                    alt={item.name}
+                    onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
+                    className="w-24 h-24 md:w-32 md:h-32 object-cover rounded-lg hover:opacity-80 transition-opacity"
+                  />
+                )}
               </Link>
 
+              {/* ---------- PRODUCT INFO ---------- */}
               <div className="flex-1 flex flex-col justify-between">
                 <div>
                   <Link
@@ -64,9 +83,11 @@ export function CartItems() {
                     >
                       <Minus className="w-4 h-4" />
                     </button>
+
                     <span className="font-semibold w-10 text-center">
                       {isWeightBased ? item.quantity.toFixed(2) : item.quantity}
                     </span>
+
                     <button
                       onClick={handleIncrement}
                       className="w-8 h-8 border rounded-lg hover:bg-muted flex items-center justify-center"
@@ -80,18 +101,22 @@ export function CartItems() {
                       ₹{(item.price * item.quantity).toLocaleString("en-IN")}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      ₹{item.price.toLocaleString("en-IN")} each
-                    </p>
+  ₹{item.price.toLocaleString("en-IN")}{" "}
+  {item.unitType === "weight" ? "per kg" : "each"}
+</p>  
                   </div>
                 </div>
               </div>
 
-              <div className="
-                w-full md:w-auto 
-                flex md:block 
-                justify-center md:justify-end 
-                mt-3 md:mt-0
-              ">
+              {/* ---------- DELETE BUTTON ---------- */}
+              <div
+                className="
+                  w-full md:w-auto 
+                  flex md:block 
+                  justify-center md:justify-end 
+                  mt-3 md:mt-0
+                "
+              >
                 <button
                   onClick={() => removeFromCart(item.id)}
                   className="

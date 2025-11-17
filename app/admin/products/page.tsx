@@ -27,17 +27,24 @@ import {
   ChevronsRight,
 } from "lucide-react";
 
+export interface ProductMedia {
+  type: "image" | "video";
+  url: string;
+}
+
 interface Product {
   _id: string;
   name: string;
   price: number;
   quantity: number;
+  media: ProductMedia[]; 
   category: string;
   industry: string;
   image: string;
   mainImage?: string;
   video?:string;
   unitType: "unit" | "weight";
+  
 }
 
 export default function ProductsPage() {
@@ -393,44 +400,61 @@ export default function ProductsPage() {
                               <div className="relative">
                                {/* Product Media (Image or Video) */}
 <div className="relative w-16 h-16 rounded-lg overflow-hidden">
-  {product.video ? (
-    <video
-      src={
-        product.video.startsWith("http")
-          ? product.video
-          : `${process.env.NEXT_PUBLIC_API_URL}/uploads/${product.video}`
-      }
-      className="w-full h-full object-cover"
-      autoPlay
-      muted
-      loop
-      playsInline
-      preload="auto"
-      controls={false}
-      onError={(e) => {
-        console.warn("Video load error:", e);
-        const fallback = e.currentTarget
-          .closest("div")
-          ?.querySelector("img");
-        if (fallback) fallback.classList.remove("hidden");
-      }}
-    />
-  ) : (
-    <img
-      src={
-        product.mainImage?.startsWith("http")
-          ? product.mainImage
-          : product.mainImage
-          ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/${product.mainImage}`
-          : "/placeholder.svg"
-      }
-      alt={product.name}
-      className="w-full h-full object-cover"
-      onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
-    />
-  )}
+  {(() => {
+    const videoItem = product.media?.find((m) => m.type === "video");
+    const imageItem = product.media?.find((m) => m.type === "image");
+
+    const videoUrl = videoItem
+      ? videoItem.url.startsWith("http")
+        ? videoItem.url
+        : `${process.env.NEXT_PUBLIC_API_URL}/uploads/${videoItem.url}`
+      : null;
+
+    const imageUrl = imageItem
+      ? imageItem.url.startsWith("http")
+        ? imageItem.url
+        : `${process.env.NEXT_PUBLIC_API_URL}/uploads/${imageItem.url}`
+      : "/placeholder.svg";
+
+    return videoUrl ? (
+      <div className="relative w-full h-full">
+        <video
+          src={videoUrl}
+          className="w-full h-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          onError={(e) => {
+            console.warn("Video failed → showing fallback image");
+            e.currentTarget.classList.add("hidden");
+            const img = e.currentTarget.parentElement?.querySelector("img");
+            if (img) img.classList.remove("hidden");
+          }}
+        />
+
+        {/* Fallback image (hidden until video fails) */}
+        <img
+          src={imageUrl}
+          alt={product.name}
+          className="absolute inset-0 w-full h-full object-cover hidden"
+        />
+      </div>
+    ) : (
+      <img
+        src={imageUrl}
+        alt={product.name}
+        className="w-full h-full object-cover"
+        onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
+      />
+    );
+  })()}
+
+  {/* Hover overlay */}
   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200" />
 </div>
+
 
                                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-lg transition-colors duration-200" />
                               </div>
